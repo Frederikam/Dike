@@ -1,0 +1,2 @@
+# Dike
+Discord gateway proxy
