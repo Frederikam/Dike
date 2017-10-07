@@ -3,10 +3,10 @@
  * All rights reserved.
  */
 
-package fredboat.dike.io;
+package fredboat.dike.util;
 
 @SuppressWarnings("unused")
-public class Codes {
+public class OpCodes {
 
     public static final int OP_0_DISPATCH = 0;
     public static final int OP_1_HEARTBEAT = 1;
@@ -21,6 +21,7 @@ public class Codes {
     public static final int OP_10_HELLO = 10;
     public static final int OP_11_HEARTBEAT_ACK = 11;
     public static final int OP_12_GUILD_SYNC = 12;
+
 
 
 }
