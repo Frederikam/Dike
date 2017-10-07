@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-package fredboat.dike.io.out;
+package fredboat.dike.io.in;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;

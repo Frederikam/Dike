@@ -3,15 +3,15 @@
  * All rights reserved.
  */
 
-package fredboat.dike.io.in.handle;
+package fredboat.dike.io.out.handle;
 
-import fredboat.dike.io.in.LocalGateway;
+import fredboat.dike.io.out.LocalGateway;
 
-public abstract class IncomingHandler {
+public abstract class OutgoingHandler {
 
     final LocalGateway localGateway;
 
-    IncomingHandler(LocalGateway localGateway) {
+    OutgoingHandler(LocalGateway localGateway) {
         this.localGateway = localGateway;
     }
 

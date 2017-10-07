@@ -5,7 +5,7 @@
 
 package fredboat.dike;
 
-import fredboat.dike.io.in.LocalGateway;
+import fredboat.dike.io.out.LocalGateway;
 
 public class Launcher {
 

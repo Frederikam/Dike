@@ -3,11 +3,11 @@
  * All rights reserved.
  */
 
-package fredboat.dike.io.in;
+package fredboat.dike.io.out;
 
 import fredboat.dike.io.Codes;
-import fredboat.dike.io.in.handle.InForwardingHandler;
-import fredboat.dike.io.in.handle.IncomingHandler;
+import fredboat.dike.io.out.handle.OutForwardingHandler;
+import fredboat.dike.io.out.handle.OutgoingHandler;
 import fredboat.dike.notation.INotationHandler;
 import fredboat.dike.notation.JsonHandler;
 import org.java_websocket.WebSocket;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 
 public class LocalGateway extends WebSocketServer {
 
-    private final ArrayList<IncomingHandler> handlers = new ArrayList<>();
+    private final ArrayList<OutgoingHandler> handlers = new ArrayList<>();
     private final INotationHandler notationHandler;
 
     public LocalGateway() {
@@ -29,19 +29,19 @@ public class LocalGateway extends WebSocketServer {
 
         notationHandler = new JsonHandler();
 
-        handlers.add(Codes.OP_0_DISPATCH, new InForwardingHandler(this));
-        handlers.add(Codes.OP_1_HEARTBEAT, new InForwardingHandler(this));
-        handlers.add(Codes.OP_2_IDENTIFY, new InForwardingHandler(this));
-        handlers.add(Codes.OP_3_PRESENCE, new InForwardingHandler(this));
-        handlers.add(Codes.OP_4_VOICE_STATE, new InForwardingHandler(this));
-        handlers.add(Codes.OP_5_VOICE_PING, new InForwardingHandler(this));
-        handlers.add(Codes.OP_6_RESUME, new InForwardingHandler(this));
-        handlers.add(Codes.OP_7_RECONNECT, new InForwardingHandler(this));
-        handlers.add(Codes.OP_8_REQUEST_MEMBERS, new InForwardingHandler(this));
-        handlers.add(Codes.OP_9_INVALIDATE_SESSION, new InForwardingHandler(this));
-        handlers.add(Codes.OP_10_HELLO, new InForwardingHandler(this));
-        handlers.add(Codes.OP_11_HEARTBEAT_ACK, new InForwardingHandler(this));
-        handlers.add(Codes.OP_12_GUILD_SYNC, new InForwardingHandler(this));
+        handlers.add(Codes.OP_0_DISPATCH, new OutForwardingHandler(this));
+        handlers.add(Codes.OP_1_HEARTBEAT, new OutForwardingHandler(this));
+        handlers.add(Codes.OP_2_IDENTIFY, new OutForwardingHandler(this));
+        handlers.add(Codes.OP_3_PRESENCE, new OutForwardingHandler(this));
+        handlers.add(Codes.OP_4_VOICE_STATE, new OutForwardingHandler(this));
+        handlers.add(Codes.OP_5_VOICE_PING, new OutForwardingHandler(this));
+        handlers.add(Codes.OP_6_RESUME, new OutForwardingHandler(this));
+        handlers.add(Codes.OP_7_RECONNECT, new OutForwardingHandler(this));
+        handlers.add(Codes.OP_8_REQUEST_MEMBERS, new OutForwardingHandler(this));
+        handlers.add(Codes.OP_9_INVALIDATE_SESSION, new OutForwardingHandler(this));
+        handlers.add(Codes.OP_10_HELLO, new OutForwardingHandler(this));
+        handlers.add(Codes.OP_11_HEARTBEAT_ACK, new OutForwardingHandler(this));
+        handlers.add(Codes.OP_12_GUILD_SYNC, new OutForwardingHandler(this));
     }
 
     private static final Logger log = LoggerFactory.getLogger(LocalGateway.class);
@@ -70,9 +70,9 @@ public class LocalGateway extends WebSocketServer {
 
         if (op == -1) throw new RuntimeException("Unable to parse op: " + message);
 
-        IncomingHandler incomingHandler = handlers.get(op);
-        if (incomingHandler != null) {
-            incomingHandler.handle(message);
+        OutgoingHandler outgoingHandler = handlers.get(op);
+        if (outgoingHandler != null) {
+            outgoingHandler.handle(message);
         } else {
             log.warn("Unhandled opcode: " + op + " Forwarding the message");
             forward(message);

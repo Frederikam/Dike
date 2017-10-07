@@ -3,12 +3,12 @@
  * All rights reserved.
  */
 
-package fredboat.dike.io.in.handle;
+package fredboat.dike.io.out.handle;
 
-import fredboat.dike.io.in.LocalGateway;
+import fredboat.dike.io.out.LocalGateway;
 
-public class InForwardingHandler extends IncomingHandler {
-    public InForwardingHandler(LocalGateway localGateway) {
+public class OutForwardingHandler extends OutgoingHandler {
+    public OutForwardingHandler(LocalGateway localGateway) {
         super(localGateway);
     }
 
