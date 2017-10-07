@@ -7,6 +7,8 @@ package fredboat.dike.io.out.handle;
 
 import fredboat.dike.io.out.LocalGateway;
 
+import java.io.IOException;
+
 public abstract class OutgoingHandler {
 
     final LocalGateway localGateway;
@@ -19,5 +21,5 @@ public abstract class OutgoingHandler {
         return localGateway;
     }
 
-    public abstract void handle(String message);
+    public abstract void handle(String message) throws IOException;
 }

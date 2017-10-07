@@ -18,7 +18,7 @@ public class GatewayUtil {
 
     private static final Logger log = LoggerFactory.getLogger(GatewayUtil.class);
     private static OkHttpClient http = new OkHttpClient();
-    private static volatile String cachedUrl = null;
+    private static volatile String cachedUrl = "wss://gateway.discord.gg/?v=6&encoding=json";
 
     public static String getGateway(boolean invalidateCache) {
         if (invalidateCache) cachedUrl = null;

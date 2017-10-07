@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-package fredboat.dike.notation;
+package fredboat.dike.util;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class JsonHandler implements INotationHandler {
+public class JsonHandler {
 
     private static final Logger log = LoggerFactory.getLogger(JsonHandler.class);
     private final JsonFactory factory;
@@ -21,7 +21,6 @@ public class JsonHandler implements INotationHandler {
         factory = new JsonFactory();
     }
 
-    @Override
     public int getOp(String message) {
         try {
             // We should never find the op in an inner object or array

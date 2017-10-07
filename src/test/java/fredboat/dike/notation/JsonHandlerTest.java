@@ -5,6 +5,7 @@
 
 package fredboat.dike.notation;
 
+import fredboat.dike.util.JsonHandler;
 import org.junit.jupiter.api.Assertions;
 
 class JsonHandlerTest {

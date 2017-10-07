@@ -5,16 +5,21 @@
 
 package fredboat.dike.cache;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fredboat.dike.util.Const;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class ShardIdentifier {
+
+    private static final Logger log = LoggerFactory.getLogger(ShardIdentifier.class);
+
+    private static OkHttpClient http = new OkHttpClient();
 
     private final String token;
     private final long user;
@@ -29,8 +34,6 @@ public class ShardIdentifier {
     }
 
     public static ShardIdentifier getFromToken(String token, int shardId, int shardCount) throws IOException {
-        OkHttpClient client = new OkHttpClient();
-        ObjectMapper mapper = new ObjectMapper();
 
         Request request = new Request.Builder()
                 .url(Const.API_GET_CURRENT_USER)
@@ -38,9 +41,14 @@ public class ShardIdentifier {
                 .header("User-Agent", Const.USER_AGENT)
                 .build();
 
-        Response response = client.newCall(request).execute();
+        Response response = http.newCall(request).execute();
+
+        if(response.code() != 200) {
+            log.warn("Not code 200: " + response.code());
+        }
+
         //noinspection ConstantConditions
-        long user = new JSONObject(response.body()).getLong("id");
+        long user = new JSONObject(response.body().string()).getLong("id");
 
         return new ShardIdentifier(token, user, shardId, shardCount);
     }
@@ -80,5 +88,14 @@ public class ShardIdentifier {
         result = 31 * result + shardId;
         result = 31 * result + shardCount;
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "ShardIdentifier{" +
+                "user=" + user +
+                ", shardId=" + shardId +
+                ", shardCount=" + shardCount +
+                '}';
     }
 }
