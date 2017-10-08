@@ -6,6 +6,7 @@
 package fredboat.dike.io.out.handle;
 
 import fredboat.dike.io.out.LocalGateway;
+import org.java_websocket.WebSocket;
 
 import java.io.IOException;
 
@@ -16,7 +17,7 @@ public class OutNoOpHandler extends OutgoingHandler {
     }
 
     @Override
-    public void handle(String message) throws IOException {
+    public void handle(WebSocket socket, String message) throws IOException {
         // Ignore
     }
 }

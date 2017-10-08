@@ -10,6 +10,7 @@ import fredboat.dike.io.in.DiscordGateway;
 import fredboat.dike.io.in.DiscordQueuePoller;
 import fredboat.dike.io.out.LocalGateway;
 import fredboat.dike.util.GatewayUtil;
+import org.java_websocket.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,10 +26,15 @@ public class Session {
     private ShardIdentifier identifier;
     private LinkedBlockingQueue<String> outboundQueue = new LinkedBlockingQueue<>();
     private DiscordGateway discordGateway;
+    @SuppressWarnings("FieldCanBeLocal")
     private final DiscordQueuePoller poller;
+    private LocalGateway localGateway;
+    private WebSocket localSocket = null;
 
-    Session(ShardIdentifier identifier, LocalGateway localGateway, String op2) {
+    Session(ShardIdentifier identifier, LocalGateway localGateway, WebSocket localSocket, String op2) {
         this.identifier = identifier;
+        this.localGateway = localGateway;
+        this.localSocket = localSocket;
 
         try {
             discordGateway = new DiscordGateway(this, new URI(GatewayUtil.getGateway()), op2);
@@ -45,7 +51,7 @@ public class Session {
     }
 
     public void sendLocal(String message) {
-
+        localSocket.send(message);
     }
 
     public ShardIdentifier getIdentifier() {
@@ -54,5 +60,13 @@ public class Session {
 
     public DiscordGateway getDiscordGateway() {
         return discordGateway;
+    }
+
+    public WebSocket getLocalSocket() {
+        return localSocket;
+    }
+
+    public void setLocalSocket(WebSocket localSocket) {
+        this.localSocket = localSocket;
     }
 }

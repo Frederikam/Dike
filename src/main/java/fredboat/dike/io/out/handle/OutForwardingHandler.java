@@ -6,6 +6,7 @@
 package fredboat.dike.io.out.handle;
 
 import fredboat.dike.io.out.LocalGateway;
+import org.java_websocket.WebSocket;
 
 public class OutForwardingHandler extends OutgoingHandler {
     public OutForwardingHandler(LocalGateway localGateway) {
@@ -13,7 +14,7 @@ public class OutForwardingHandler extends OutgoingHandler {
     }
 
     @Override
-    public void handle(String message) {
+    public void handle(WebSocket socket, String message) {
         localGateway.forward(message);
     }
 }

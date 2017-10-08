@@ -9,6 +9,7 @@ import fredboat.dike.cache.Session;
 import fredboat.dike.cache.SessionManager;
 import fredboat.dike.cache.ShardIdentifier;
 import fredboat.dike.io.out.LocalGateway;
+import org.java_websocket.WebSocket;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +25,9 @@ public class OutIdentifyHandler extends OutgoingHandler {
     }
 
     @Override
-    public void handle(String message) throws IOException {
-        JSONObject d = new JSONObject(message).getJSONObject("d");
+    public void handle(WebSocket socket, String message) throws IOException {
+        JSONObject json = new JSONObject(message);
+        JSONObject d = json.getJSONObject("d");
 
         ShardIdentifier identifier;
         if (d.has("shard")) {
@@ -42,7 +44,14 @@ public class OutIdentifyHandler extends OutgoingHandler {
             );
         }
 
-        Session session = SessionManager.INSTANCE.createSession(identifier, localGateway, message);
+        /* Make our own changes to the OP 2 */
+        JSONObject properties = d.getJSONObject("properties");
+        properties.put("$device", properties.get("$device") + " via Dike");
+        properties.put("$browser", properties.get("$browser") + " via Dike");
+        d.put("properties", properties);
+        json.put("d", d);
+
+        Session session = SessionManager.INSTANCE.createSession(identifier, localGateway, socket, json.toString());
         localGateway.setSession(session);
     }
 

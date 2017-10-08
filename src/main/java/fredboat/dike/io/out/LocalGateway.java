@@ -78,7 +78,7 @@ public class LocalGateway extends WebSocketServer {
         OutgoingHandler outgoingHandler = handlers.get(op);
         if (outgoingHandler != null) {
             try {
-                outgoingHandler.handle(message);
+                outgoingHandler.handle(conn, message);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

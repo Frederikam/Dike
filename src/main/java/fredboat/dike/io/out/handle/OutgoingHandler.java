@@ -6,6 +6,7 @@
 package fredboat.dike.io.out.handle;
 
 import fredboat.dike.io.out.LocalGateway;
+import org.java_websocket.WebSocket;
 
 import java.io.IOException;
 
@@ -21,5 +22,5 @@ public abstract class OutgoingHandler {
         return localGateway;
     }
 
-    public abstract void handle(String message) throws IOException;
+    public abstract void handle(WebSocket socket, String message) throws IOException;
 }

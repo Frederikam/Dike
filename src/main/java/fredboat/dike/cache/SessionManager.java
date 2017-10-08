@@ -6,6 +6,7 @@
 package fredboat.dike.cache;
 
 import fredboat.dike.io.out.LocalGateway;
+import org.java_websocket.WebSocket;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,8 +20,8 @@ public class SessionManager {
         return sessions.get(identifier);
     }
 
-    public Session createSession(ShardIdentifier identifier, LocalGateway localGateway, String op2) {
-        Session session = new Session(identifier, localGateway, op2);
+    public Session createSession(ShardIdentifier identifier, LocalGateway localGateway, WebSocket localSocket, String op2) {
+        Session session = new Session(identifier, localGateway, localSocket, op2);
         sessions.put(identifier, session);
         return session;
     }

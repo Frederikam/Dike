@@ -20,11 +20,15 @@ import fredboat.dike.util.OpCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.DataFormatException;
+import java.util.zip.InflaterOutputStream;
 
 public class DiscordGateway extends WebSocketAdapter {
 
@@ -58,15 +62,35 @@ public class DiscordGateway extends WebSocketAdapter {
 
         socket = new WebSocketFactory()
                 .createSocket(uri)
-                .addListener(this)
-                .addHeader("Accept-Encoding", "gzip");
+                .addListener(this);
+                //.addHeader("Accept-Encoding", "gzip");
 
         socket.connect();
     }
 
+    /* Thanks JDA folks for this method */
+    @Override
+    public void onBinaryMessage(WebSocket websocket, byte[] binary) throws UnsupportedEncodingException, DataFormatException
+    {
+        //Thanks to ShadowLordAlpha and Shredder121 for code and debugging.
+        //Get the compressed message and inflate it
+        ByteArrayOutputStream out = new ByteArrayOutputStream(binary.length * 2);
+        try (InflaterOutputStream decompressor = new InflaterOutputStream(out))
+        {
+            decompressor.write(binary);
+        }
+        catch (IOException e)
+        {
+            throw (DataFormatException) new DataFormatException("Malformed").initCause(e);
+        }
+
+        // send the inflated message to the TextMessage method
+        onTextMessage(websocket, out.toString("UTF-8"));
+    }
+
     @SuppressWarnings("Duplicates")
     @Override
-    public void onTextMessage(WebSocket websocket, String text) throws Exception {
+    public void onTextMessage(WebSocket websocket, String text) {
         try {
             log.info(text);
 
@@ -81,7 +105,7 @@ public class DiscordGateway extends WebSocketAdapter {
                 log.warn("Unhandled opcode: " + op + " Forwarding the message");
                 forward(text);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.info("Caught exception in websocket", e);
         }
     }
