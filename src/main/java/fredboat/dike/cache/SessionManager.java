@@ -20,7 +20,7 @@ public class SessionManager {
     }
 
     public Session createSession(ShardIdentifier identifier, LocalGateway localGateway, String op2) {
-        Session session = new Session(identifier);
+        Session session = new Session(identifier, localGateway, op2);
         sessions.put(identifier, session);
         return session;
     }
