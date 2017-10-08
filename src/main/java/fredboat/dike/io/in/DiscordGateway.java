@@ -49,8 +49,21 @@ public class DiscordGateway extends WebSocketAdapter {
     }
 
     @Override
-    public void onCloseFrame(WebSocket websocket, WebSocketFrame frame) throws Exception {
-        log.info("Lost connection: " + frame);
+    public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer) throws Exception {
+        String str = "Got disconnected from websocket by "
+                + (closedByServer ? "server" : "client")
+                + "!";
+
+        if (serverCloseFrame != null) {
+            str += "\n\tRemote code: " + serverCloseFrame.getCloseCode();
+            str += "\n\tRemote reason: " + serverCloseFrame.getCloseReason();
+        }
+        if (clientCloseFrame != null) {
+            str += "\n\tClient code: " + clientCloseFrame.getCloseCode();
+            str += "\n\tClient reason: " + clientCloseFrame.getCloseReason();
+        }
+
+        log.info(str);
     }
 
     @Override
