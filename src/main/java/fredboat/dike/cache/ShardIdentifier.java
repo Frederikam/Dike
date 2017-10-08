@@ -98,4 +98,8 @@ public class ShardIdentifier {
                 ", shardCount=" + shardCount +
                 '}';
     }
+
+    public String toStringShort() {
+        return "[" + shardId + " / " + shardCount + "]";
+    }
 }

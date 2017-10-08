@@ -27,11 +27,20 @@ public class OutIdentifyHandler extends OutgoingHandler {
     public void handle(String message) throws IOException {
         JSONObject d = new JSONObject(message).getJSONObject("d");
 
-        ShardIdentifier identifier = ShardIdentifier.getFromToken(
-                d.getString("token"),
-                d.getJSONArray("shard").getInt(0),
-                d.getJSONArray("shard").getInt(1)
-        );
+        ShardIdentifier identifier;
+        if (d.has("shard")) {
+            identifier = ShardIdentifier.getFromToken(
+                    d.getString("token"),
+                    d.getJSONArray("shard").getInt(0),
+                    d.getJSONArray("shard").getInt(1)
+            );
+        } else {
+            identifier = ShardIdentifier.getFromToken(
+                    d.getString("token"),
+                    0,
+                    1
+            );
+        }
 
         Session session = SessionManager.INSTANCE.createSession(identifier, localGateway, message);
         localGateway.setSession(session);

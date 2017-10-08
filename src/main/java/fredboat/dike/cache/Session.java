@@ -7,6 +7,7 @@ package fredboat.dike.cache;
 
 import com.neovisionaries.ws.client.WebSocketException;
 import fredboat.dike.io.in.DiscordGateway;
+import fredboat.dike.io.in.DiscordQueuePoller;
 import fredboat.dike.io.out.LocalGateway;
 import fredboat.dike.util.GatewayUtil;
 import org.slf4j.Logger;
@@ -24,16 +25,19 @@ public class Session {
     private ShardIdentifier identifier;
     private LinkedBlockingQueue<String> outboundQueue = new LinkedBlockingQueue<>();
     private DiscordGateway discordGateway;
+    private final DiscordQueuePoller poller;
 
     Session(ShardIdentifier identifier, LocalGateway localGateway, String op2) {
         this.identifier = identifier;
 
         try {
-            discordGateway = new DiscordGateway(this, new URI(GatewayUtil.getGateway()));
-            discordGateway.getSocket().sendText(op2);
+            discordGateway = new DiscordGateway(this, new URI(GatewayUtil.getGateway()), op2);
         } catch (URISyntaxException | WebSocketException | IOException e) {
             throw new RuntimeException("Failed to open gateway connection", e);
         }
+
+        poller = new DiscordQueuePoller(this, outboundQueue);
+        poller.start();
     }
 
     public void sendDiscord(String message) {
@@ -46,5 +50,9 @@ public class Session {
 
     public ShardIdentifier getIdentifier() {
         return identifier;
+    }
+
+    public DiscordGateway getDiscordGateway() {
+        return discordGateway;
     }
 }

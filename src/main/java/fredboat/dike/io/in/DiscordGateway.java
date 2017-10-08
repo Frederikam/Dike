@@ -12,6 +12,7 @@ import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketFrame;
 import fredboat.dike.cache.Session;
 import fredboat.dike.io.in.handle.InForwardingHandler;
+import fredboat.dike.io.in.handle.InHelloHandler;
 import fredboat.dike.io.in.handle.InNoOpHandler;
 import fredboat.dike.io.in.handle.IncomingHandler;
 import fredboat.dike.util.JsonHandler;
@@ -33,8 +34,12 @@ public class DiscordGateway extends WebSocketAdapter {
     private final JsonHandler jsonHandler = new JsonHandler();
     private final Session session;
     private final WebSocket socket;
+    /**
+     * If true we should not send any messages asides from OP 2 and OP 6
+     */
+    private volatile boolean locked = true;
 
-    public DiscordGateway(Session session, URI uri) throws IOException, WebSocketException {
+    public DiscordGateway(Session session, URI uri, String op2) throws IOException, WebSocketException {
         this.session = session;
 
         handlers.add(OpCodes.OP_0_DISPATCH, new InForwardingHandler(this));
@@ -47,7 +52,7 @@ public class DiscordGateway extends WebSocketAdapter {
         handlers.add(OpCodes.OP_7_RECONNECT, new InNoOpHandler(this)); //TODO
         handlers.add(OpCodes.OP_8_REQUEST_MEMBERS, new InNoOpHandler(this));
         handlers.add(OpCodes.OP_9_INVALIDATE_SESSION, new InNoOpHandler(this)); //TODO
-        handlers.add(OpCodes.OP_10_HELLO, new InForwardingHandler(this)); //TODO
+        handlers.add(OpCodes.OP_10_HELLO, new InHelloHandler(this, op2));
         handlers.add(OpCodes.OP_11_HEARTBEAT_ACK, new InForwardingHandler(this)); // We may want to implement this
         handlers.add(OpCodes.OP_12_GUILD_SYNC, new InNoOpHandler(this));
 
@@ -62,22 +67,22 @@ public class DiscordGateway extends WebSocketAdapter {
     @SuppressWarnings("Duplicates")
     @Override
     public void onTextMessage(WebSocket websocket, String text) throws Exception {
-        log.info(text);
+        try {
+            log.info(text);
 
-        int op = jsonHandler.getOp(text);
+            int op = jsonHandler.getOp(text);
 
-        if (op == -1) throw new RuntimeException("Unable to parse op: " + text);
+            if (op == -1) throw new RuntimeException("Unable to parse op: " + text);
 
-        IncomingHandler incoming = handlers.get(op);
-        if (incoming != null) {
-            try {
+            IncomingHandler incoming = handlers.get(op);
+            if (incoming != null) {
                 incoming.handle(text);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            } else {
+                log.warn("Unhandled opcode: " + op + " Forwarding the message");
+                forward(text);
             }
-        } else {
-            log.warn("Unhandled opcode: " + op + " Forwarding the message");
-            forward(text);
+        } catch (IOException e) {
+            log.info("Caught exception in websocket", e);
         }
     }
 
@@ -115,5 +120,17 @@ public class DiscordGateway extends WebSocketAdapter {
 
     public WebSocket getSocket() {
         return socket;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public Session getSession() {
+        return session;
     }
 }
