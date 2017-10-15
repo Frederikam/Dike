@@ -7,6 +7,7 @@ package fredboat.dike.io.in.handle;
 
 import fredboat.dike.io.in.DiscordGateway;
 import fredboat.dike.io.in.Heartbeater;
+import fredboat.dike.util.OpCodes;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,14 +29,34 @@ public class InHelloHandler extends IncomingHandler {
 
     @Override
     public void handle(String message) throws IOException {
-        log.info("Received HELLO OP 10, sending IDENTIFY OP 2");
-        discordGateway.getSocket().sendText(op2);
-        discordGateway.setLocked(false);
+        switch (discordGateway.getState()) {
+            case WAITING_FOR_HELLO_TO_IDENTIFY:
+                discordGateway.getSocket().sendText(op2);
+                discordGateway.setState(DiscordGateway.State.IDENTIFYING);
 
-        // Start heartbeating
-        int interval = new JSONObject(message).getJSONObject("d").getInt("heartbeat_interval");
-        heartbeater = new Heartbeater(discordGateway, interval);
-        heartbeater.start();
-        discordGateway.setState(DiscordGateway.State.IDENTIFYING);
+                if (heartbeater != null) break;
+
+                // Start heartbeating
+                int interval = new JSONObject(message).getJSONObject("d").getInt("heartbeat_interval");
+                heartbeater = new Heartbeater(discordGateway, interval);
+                heartbeater.start();
+                break;
+            case WAITING_FOR_HELLO_TO_RESUME:
+                discordGateway.setState(DiscordGateway.State.RESUMING);
+
+                JSONObject op6 = new JSONObject();
+                op6.put("op", OpCodes.OP_6_RESUME);
+
+                JSONObject d = new JSONObject();
+                d.put("seq", ((InDispatchHandler)discordGateway.getHandler(OpCodes.OP_0_DISPATCH)).getSequence());
+                d.put("token", discordGateway.getSession().getIdentifier().getToken());
+                d.put("session_id", ((InDispatchHandler)discordGateway.getHandler(OpCodes.OP_0_DISPATCH)).getSessionId());
+                op6.put("d", d);
+
+                discordGateway.getSocket().sendText(op6.toString());
+                break;
+            default:
+                throw new IllegalStateException("Not expecting OP 10 when in state: " + discordGateway.getState());
+        }
     }
 }

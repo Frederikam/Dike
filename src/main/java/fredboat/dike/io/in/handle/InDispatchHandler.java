@@ -7,6 +7,7 @@ package fredboat.dike.io.in.handle;
 
 import com.jsoniter.JsonIterator;
 import fredboat.dike.io.in.DiscordGateway;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -16,7 +17,8 @@ public class InDispatchHandler extends IncomingHandler {
         super(discordGateway);
     }
 
-    private int sequence = -1;
+    private long sequence = -1;
+    private String sessionId = null;
 
     @Override
     public void handle(String message) throws IOException {
@@ -28,10 +30,12 @@ public class InDispatchHandler extends IncomingHandler {
             switch (field) {
                 case "s":
                     sequence = iter.readInt();
-                    break;
+                    continue;
                 case "t":
                     type = iter.readString();
-                    break;
+                    continue;
+                default:
+                    iter.skip();
             }
         }
 
@@ -40,6 +44,7 @@ public class InDispatchHandler extends IncomingHandler {
         switch (type) {
             case "READY":
                 discordGateway.setState(DiscordGateway.State.CONNECTED);
+                sessionId = new JSONObject(message).getJSONObject("d").getString("session_id");
                 break;
             case "RESUMED":
                 discordGateway.setState(DiscordGateway.State.CONNECTED);
@@ -49,7 +54,11 @@ public class InDispatchHandler extends IncomingHandler {
         discordGateway.forward(message);
     }
 
-    public int getSequence() {
+    long getSequence() {
         return sequence;
+    }
+
+    String getSessionId() {
+        return sessionId;
     }
 }

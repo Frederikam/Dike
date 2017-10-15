@@ -36,6 +36,9 @@ public class Heartbeater extends Thread {
                     Thread.sleep(1000);
                 }
 
+                // Do we need to shutdown the heartbeat?
+                if (gateway.getState() == DiscordGateway.State.SHUTDOWN) return;
+
                 JSONObject json = new JSONObject();
                 json.put("op", OpCodes.OP_1_HEARTBEAT);
                 json.put("d", sequence);

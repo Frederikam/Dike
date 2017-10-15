@@ -11,6 +11,7 @@ import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketFrame;
 import fredboat.dike.cache.Session;
+import fredboat.dike.io.in.handle.InDispatchHandler;
 import fredboat.dike.io.in.handle.InForwardingHandler;
 import fredboat.dike.io.in.handle.InHelloHandler;
 import fredboat.dike.io.in.handle.InInvalidateSessionHandler;
@@ -55,7 +56,7 @@ public class DiscordGateway extends WebSocketAdapter {
         this.session = session;
         this.url = url;
 
-        handlers.add(OpCodes.OP_0_DISPATCH, new InForwardingHandler(this));
+        handlers.add(OpCodes.OP_0_DISPATCH, new InDispatchHandler(this));
         handlers.add(OpCodes.OP_1_HEARTBEAT, new InNoOpHandler(this)); // We may want to implement this
         handlers.add(OpCodes.OP_2_IDENTIFY, new InNoOpHandler(this));
         handlers.add(OpCodes.OP_3_PRESENCE, new InNoOpHandler(this));
@@ -192,12 +193,8 @@ public class DiscordGateway extends WebSocketAdapter {
         return socket;
     }
 
-    public void setLocked(boolean locked) {
-        this.locked = locked;
-    }
-
     public boolean isLocked() {
-        return locked;
+        return state != CONNECTED;
     }
 
     public Session getSession() {
@@ -216,6 +213,10 @@ public class DiscordGateway extends WebSocketAdapter {
         }
 
         this.state = state;
+    }
+
+    public IncomingHandler getHandler(int op) {
+        return handlers.get(op);
     }
 
     public enum State {
