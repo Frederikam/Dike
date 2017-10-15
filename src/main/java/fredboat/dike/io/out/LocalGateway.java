@@ -9,6 +9,7 @@ import fredboat.dike.cache.Session;
 import fredboat.dike.io.out.handle.OutForwardingHandler;
 import fredboat.dike.io.out.handle.OutIdentifyHandler;
 import fredboat.dike.io.out.handle.OutNoOpHandler;
+import fredboat.dike.io.out.handle.OutResumeHandler;
 import fredboat.dike.io.out.handle.OutgoingHandler;
 import fredboat.dike.util.JsonHandler;
 import fredboat.dike.util.OpCodes;
@@ -40,7 +41,7 @@ public class LocalGateway extends WebSocketServer {
         handlers.add(OpCodes.OP_3_PRESENCE, new OutForwardingHandler(this));
         handlers.add(OpCodes.OP_4_VOICE_STATE, new OutForwardingHandler(this));
         handlers.add(OpCodes.OP_5_VOICE_PING, new OutForwardingHandler(this));
-        handlers.add(OpCodes.OP_6_RESUME, new OutForwardingHandler(this));
+        handlers.add(OpCodes.OP_6_RESUME, new OutResumeHandler(this));
         handlers.add(OpCodes.OP_7_RECONNECT, new OutNoOpHandler(this));
         handlers.add(OpCodes.OP_8_REQUEST_MEMBERS, new OutForwardingHandler(this));
         handlers.add(OpCodes.OP_9_INVALIDATE_SESSION, new OutNoOpHandler(this));
