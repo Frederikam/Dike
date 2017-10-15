@@ -10,9 +10,9 @@ import org.java_websocket.WebSocket;
 
 import java.io.IOException;
 
-public class OutNoOpHandler extends OutgoingHandler {
+public class OutNOPHandler extends OutgoingHandler {
 
-    public OutNoOpHandler(LocalGateway localGateway) {
+    public OutNOPHandler(LocalGateway localGateway) {
         super(localGateway);
     }
 

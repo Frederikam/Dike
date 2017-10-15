@@ -5,10 +5,10 @@
 
 package fredboat.dike.io.out;
 
-import fredboat.dike.cache.Session;
+import fredboat.dike.io.out.handle.OutNOPHandler;
+import fredboat.dike.session.Session;
 import fredboat.dike.io.out.handle.OutForwardingHandler;
 import fredboat.dike.io.out.handle.OutIdentifyHandler;
-import fredboat.dike.io.out.handle.OutNoOpHandler;
 import fredboat.dike.io.out.handle.OutResumeHandler;
 import fredboat.dike.io.out.handle.OutgoingHandler;
 import fredboat.dike.util.JsonHandler;
@@ -34,19 +34,19 @@ public class LocalGateway extends WebSocketServer {
 
         jsonHandler = new JsonHandler();
 
-        // Opcodes that are received only to the client will be ignored by OutNoOpHandler
-        handlers.add(OpCodes.OP_0_DISPATCH, new OutNoOpHandler(this));
-        handlers.add(OpCodes.OP_1_HEARTBEAT, new OutNoOpHandler(this)); // We may want to implement this
+        // Opcodes that are received only to the client will be ignored by OutNOPHandler
+        handlers.add(OpCodes.OP_0_DISPATCH, new OutNOPHandler(this));
+        handlers.add(OpCodes.OP_1_HEARTBEAT, new OutNOPHandler(this)); // We may want to implement this
         handlers.add(OpCodes.OP_2_IDENTIFY, new OutIdentifyHandler(this));
         handlers.add(OpCodes.OP_3_PRESENCE, new OutForwardingHandler(this));
         handlers.add(OpCodes.OP_4_VOICE_STATE, new OutForwardingHandler(this));
         handlers.add(OpCodes.OP_5_VOICE_PING, new OutForwardingHandler(this));
         handlers.add(OpCodes.OP_6_RESUME, new OutResumeHandler(this));
-        handlers.add(OpCodes.OP_7_RECONNECT, new OutNoOpHandler(this));
+        handlers.add(OpCodes.OP_7_RECONNECT, new OutNOPHandler(this));
         handlers.add(OpCodes.OP_8_REQUEST_MEMBERS, new OutForwardingHandler(this));
-        handlers.add(OpCodes.OP_9_INVALIDATE_SESSION, new OutNoOpHandler(this));
-        handlers.add(OpCodes.OP_10_HELLO, new OutNoOpHandler(this));
-        handlers.add(OpCodes.OP_11_HEARTBEAT_ACK, new OutNoOpHandler(this));
+        handlers.add(OpCodes.OP_9_INVALIDATE_SESSION, new OutNOPHandler(this));
+        handlers.add(OpCodes.OP_10_HELLO, new OutNOPHandler(this));
+        handlers.add(OpCodes.OP_11_HEARTBEAT_ACK, new OutNOPHandler(this));
         handlers.add(OpCodes.OP_12_GUILD_SYNC, new OutForwardingHandler(this));
     }
 

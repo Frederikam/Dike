@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-package fredboat.dike.cache;
+package fredboat.dike.session;
 
 import fredboat.dike.util.Const;
 import okhttp3.OkHttpClient;

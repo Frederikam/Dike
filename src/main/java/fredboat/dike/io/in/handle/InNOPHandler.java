@@ -9,8 +9,8 @@ import fredboat.dike.io.in.DiscordGateway;
 
 import java.io.IOException;
 
-public class InNoOpHandler extends IncomingHandler {
-    public InNoOpHandler(DiscordGateway discordGateway) {
+public class InNOPHandler extends IncomingHandler {
+    public InNOPHandler(DiscordGateway discordGateway) {
         super(discordGateway);
     }
 

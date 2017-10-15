@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-package fredboat.dike.cache;
+package fredboat.dike.session;
 
 import com.neovisionaries.ws.client.WebSocketException;
 import fredboat.dike.io.in.DiscordGateway;

@@ -10,12 +10,12 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketFrame;
-import fredboat.dike.cache.Session;
+import fredboat.dike.session.Session;
 import fredboat.dike.io.in.handle.InDispatchHandler;
 import fredboat.dike.io.in.handle.InForwardingHandler;
 import fredboat.dike.io.in.handle.InHelloHandler;
 import fredboat.dike.io.in.handle.InInvalidateSessionHandler;
-import fredboat.dike.io.in.handle.InNoOpHandler;
+import fredboat.dike.io.in.handle.InNOPHandler;
 import fredboat.dike.io.in.handle.IncomingHandler;
 import fredboat.dike.util.CloseCodes;
 import fredboat.dike.util.JsonHandler;
@@ -57,18 +57,18 @@ public class DiscordGateway extends WebSocketAdapter {
         this.url = url;
 
         handlers.add(OpCodes.OP_0_DISPATCH, new InDispatchHandler(this));
-        handlers.add(OpCodes.OP_1_HEARTBEAT, new InNoOpHandler(this)); // We may want to implement this
-        handlers.add(OpCodes.OP_2_IDENTIFY, new InNoOpHandler(this));
-        handlers.add(OpCodes.OP_3_PRESENCE, new InNoOpHandler(this));
-        handlers.add(OpCodes.OP_4_VOICE_STATE, new InNoOpHandler(this));
-        handlers.add(OpCodes.OP_5_VOICE_PING, new InNoOpHandler(this));
-        handlers.add(OpCodes.OP_6_RESUME, new InNoOpHandler(this));
-        handlers.add(OpCodes.OP_7_RECONNECT, new InNoOpHandler(this)); //TODO
-        handlers.add(OpCodes.OP_8_REQUEST_MEMBERS, new InNoOpHandler(this));
+        handlers.add(OpCodes.OP_1_HEARTBEAT, new InNOPHandler(this)); // We may want to implement this
+        handlers.add(OpCodes.OP_2_IDENTIFY, new InNOPHandler(this));
+        handlers.add(OpCodes.OP_3_PRESENCE, new InNOPHandler(this));
+        handlers.add(OpCodes.OP_4_VOICE_STATE, new InNOPHandler(this));
+        handlers.add(OpCodes.OP_5_VOICE_PING, new InNOPHandler(this));
+        handlers.add(OpCodes.OP_6_RESUME, new InNOPHandler(this));
+        handlers.add(OpCodes.OP_7_RECONNECT, new InNOPHandler(this)); //TODO
+        handlers.add(OpCodes.OP_8_REQUEST_MEMBERS, new InNOPHandler(this));
         handlers.add(OpCodes.OP_9_INVALIDATE_SESSION, new InInvalidateSessionHandler(this));
         handlers.add(OpCodes.OP_10_HELLO, new InHelloHandler(this, op2));
         handlers.add(OpCodes.OP_11_HEARTBEAT_ACK, new InForwardingHandler(this)); // We may want to implement this
-        handlers.add(OpCodes.OP_12_GUILD_SYNC, new InNoOpHandler(this));
+        handlers.add(OpCodes.OP_12_GUILD_SYNC, new InNOPHandler(this));
 
         connect();
     }

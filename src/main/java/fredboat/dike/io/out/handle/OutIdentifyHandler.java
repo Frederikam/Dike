@@ -5,9 +5,9 @@
 
 package fredboat.dike.io.out.handle;
 
-import fredboat.dike.cache.Session;
-import fredboat.dike.cache.SessionManager;
-import fredboat.dike.cache.ShardIdentifier;
+import fredboat.dike.session.Session;
+import fredboat.dike.session.SessionManager;
+import fredboat.dike.session.ShardIdentifier;
 import fredboat.dike.io.out.LocalGateway;
 import org.java_websocket.WebSocket;
 import org.json.JSONObject;
