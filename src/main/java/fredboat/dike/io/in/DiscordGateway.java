@@ -16,10 +16,12 @@ import fredboat.dike.io.in.handle.InHelloHandler;
 import fredboat.dike.io.in.handle.InInvalidateSessionHandler;
 import fredboat.dike.io.in.handle.InNoOpHandler;
 import fredboat.dike.io.in.handle.IncomingHandler;
+import fredboat.dike.util.CloseCodes;
 import fredboat.dike.util.JsonHandler;
 import fredboat.dike.util.OpCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.plugin.dom.exception.InvalidStateException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -40,16 +42,18 @@ public class DiscordGateway extends WebSocketAdapter {
     private final ArrayList<IncomingHandler> handlers = new ArrayList<>();
     private final JsonHandler jsonHandler = new JsonHandler();
     private final Session session;
-    private final WebSocket socket;
+    private final URI url;
+    private WebSocket socket;
     /**
      * If true we should not send any messages asides from OP 2 and OP 6
      */
     private volatile boolean locked = true;
-
     private volatile State state = WAITING_FOR_HELLO_TO_IDENTIFY;
+    private int failedConnectAttempts = 0;
 
-    public DiscordGateway(Session session, URI uri, String op2) throws IOException, WebSocketException {
+    public DiscordGateway(Session session, URI url, String op2) throws IOException, WebSocketException {
         this.session = session;
+        this.url = url;
 
         handlers.add(OpCodes.OP_0_DISPATCH, new InForwardingHandler(this));
         handlers.add(OpCodes.OP_1_HEARTBEAT, new InNoOpHandler(this)); // We may want to implement this
@@ -65,8 +69,12 @@ public class DiscordGateway extends WebSocketAdapter {
         handlers.add(OpCodes.OP_11_HEARTBEAT_ACK, new InForwardingHandler(this)); // We may want to implement this
         handlers.add(OpCodes.OP_12_GUILD_SYNC, new InNoOpHandler(this));
 
+        connect();
+    }
+
+    private void connect() throws IOException, WebSocketException {
         socket = new WebSocketFactory()
-                .createSocket(uri)
+                .createSocket(url)
                 .addListener(this)
                 .addHeader("Accept-Encoding", "gzip");
 
@@ -75,17 +83,13 @@ public class DiscordGateway extends WebSocketAdapter {
 
     /* Thanks JDA folks for this method */
     @Override
-    public void onBinaryMessage(WebSocket websocket, byte[] binary) throws UnsupportedEncodingException, DataFormatException
-    {
+    public void onBinaryMessage(WebSocket websocket, byte[] binary) throws UnsupportedEncodingException, DataFormatException {
         //Thanks to ShadowLordAlpha and Shredder121 for code and debugging.
         //Get the compressed message and inflate it
         ByteArrayOutputStream out = new ByteArrayOutputStream(binary.length * 2);
-        try (InflaterOutputStream decompressor = new InflaterOutputStream(out))
-        {
+        try (InflaterOutputStream decompressor = new InflaterOutputStream(out)) {
             decompressor.write(binary);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw (DataFormatException) new DataFormatException("Malformed").initCause(e);
         }
 
@@ -118,6 +122,7 @@ public class DiscordGateway extends WebSocketAdapter {
     @Override
     public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
         log.info("Connected to " + websocket.getURI());
+        failedConnectAttempts = 0;
     }
 
     @Override
@@ -136,6 +141,42 @@ public class DiscordGateway extends WebSocketAdapter {
         }
 
         log.info(str);
+
+        if (state == SHUTDOWN) return;
+
+        boolean shouldResume = true;
+
+        if (closedByServer && serverCloseFrame != null) {
+            // Make sure we can actually recover
+            if (serverCloseFrame.getCloseCode() == CloseCodes.AUTHENTICATION_FAILED.getCode()
+                    || serverCloseFrame.getCloseCode() == CloseCodes.SHARDING_REQUIRED.getCode()) {
+                log.error("Fatal remote close code " + serverCloseFrame.getCloseCode() + "!");
+                setState(SHUTDOWN);
+                return;
+            }
+
+            // Check if the session is still valid
+            // Src: https://fred.moe/Twj.png and https://fred.moe/lnj.png
+            shouldResume =
+                    serverCloseFrame.getCloseCode() != CloseCodes.UNKNOWN_OPCODE.getCode()
+                            && serverCloseFrame.getCloseCode() != CloseCodes.ALREADY_AUTHENTICATED.getCode()
+                            && serverCloseFrame.getCloseCode() != CloseCodes.RESUME_INVALID_SESSION.getCode()
+                            && serverCloseFrame.getCloseCode() != CloseCodes.INVALID_SEQ.getCode()
+                            && serverCloseFrame.getCloseCode() != 4011; // Not sure what this is
+        }
+
+        if (!closedByServer
+                && clientCloseFrame != null
+                && clientCloseFrame.getCloseCode() == CloseCodes.GRACEFUL_CLOSE.getCode()) {
+            shouldResume = false;
+        }
+
+        if (shouldResume) {
+            setState(WAITING_FOR_HELLO_TO_RESUME);
+        } else {
+            setState(WAITING_FOR_HELLO_TO_IDENTIFY);
+        }
+        connect();
     }
 
     @Override
@@ -169,12 +210,17 @@ public class DiscordGateway extends WebSocketAdapter {
 
     public void setState(State state) {
         log.info(this.state + " -> " + state);
+
+        if (this.state == SHUTDOWN && state != SHUTDOWN) {
+            throw new InvalidStateException("Can't change state if we are shutdown!");
+        }
+
         this.state = state;
     }
 
     public enum State {
         /**
-         * We just started and are waiting for OP 10 so we can identify
+         * We just started (or reconnected) and are waiting for OP 10 so we can identify
          */
         WAITING_FOR_HELLO_TO_IDENTIFY,
         /**
@@ -196,7 +242,11 @@ public class DiscordGateway extends WebSocketAdapter {
         /**
          * We lost connection and are waiting to reconnect
          */
-        WAITING_TO_RECONNECT
+        WAITING_TO_RECONNECT,
+        /**
+         * Something failed irrecoverably. Most likely cause is that our token got reset
+         */
+        SHUTDOWN
 
     }
 
