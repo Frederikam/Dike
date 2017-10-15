@@ -26,4 +26,8 @@ public class SessionManager {
         return session;
     }
 
+    void onInvalidate(Session session) {
+        sessions.remove(session.getIdentifier());
+    }
+
 }

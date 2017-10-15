@@ -69,4 +69,13 @@ public class Session {
     public void setLocalSocket(WebSocket localSocket) {
         this.localSocket = localSocket;
     }
+
+    /**
+     * Invoked upon getting OP 9
+     *
+     * @param d the "d" value from the OP 9
+     */
+    public void invalidate(boolean d) {
+        //TODO
+    }
 }

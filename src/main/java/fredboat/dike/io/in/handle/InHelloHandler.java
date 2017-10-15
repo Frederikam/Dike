@@ -36,5 +36,6 @@ public class InHelloHandler extends IncomingHandler {
         int interval = new JSONObject(message).getJSONObject("d").getInt("heartbeat_interval");
         heartbeater = new Heartbeater(discordGateway, interval);
         heartbeater.start();
+        discordGateway.setState(DiscordGateway.State.IDENTIFYING);
     }
 }

@@ -13,6 +13,7 @@ import com.neovisionaries.ws.client.WebSocketFrame;
 import fredboat.dike.cache.Session;
 import fredboat.dike.io.in.handle.InForwardingHandler;
 import fredboat.dike.io.in.handle.InHelloHandler;
+import fredboat.dike.io.in.handle.InInvalidateSessionHandler;
 import fredboat.dike.io.in.handle.InNoOpHandler;
 import fredboat.dike.io.in.handle.IncomingHandler;
 import fredboat.dike.util.JsonHandler;
@@ -30,6 +31,8 @@ import java.util.Map;
 import java.util.zip.DataFormatException;
 import java.util.zip.InflaterOutputStream;
 
+import static fredboat.dike.io.in.DiscordGateway.State.*;
+
 public class DiscordGateway extends WebSocketAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(DiscordGateway.class);
@@ -43,6 +46,8 @@ public class DiscordGateway extends WebSocketAdapter {
      */
     private volatile boolean locked = true;
 
+    private volatile State state = WAITING_FOR_HELLO_TO_IDENTIFY;
+
     public DiscordGateway(Session session, URI uri, String op2) throws IOException, WebSocketException {
         this.session = session;
 
@@ -55,15 +60,15 @@ public class DiscordGateway extends WebSocketAdapter {
         handlers.add(OpCodes.OP_6_RESUME, new InNoOpHandler(this));
         handlers.add(OpCodes.OP_7_RECONNECT, new InNoOpHandler(this)); //TODO
         handlers.add(OpCodes.OP_8_REQUEST_MEMBERS, new InNoOpHandler(this));
-        handlers.add(OpCodes.OP_9_INVALIDATE_SESSION, new InNoOpHandler(this)); //TODO
+        handlers.add(OpCodes.OP_9_INVALIDATE_SESSION, new InInvalidateSessionHandler(this));
         handlers.add(OpCodes.OP_10_HELLO, new InHelloHandler(this, op2));
         handlers.add(OpCodes.OP_11_HEARTBEAT_ACK, new InForwardingHandler(this)); // We may want to implement this
         handlers.add(OpCodes.OP_12_GUILD_SYNC, new InNoOpHandler(this));
 
         socket = new WebSocketFactory()
                 .createSocket(uri)
-                .addListener(this);
-                //.addHeader("Accept-Encoding", "gzip");
+                .addListener(this)
+                .addHeader("Accept-Encoding", "gzip");
 
         socket.connect();
     }
@@ -157,4 +162,42 @@ public class DiscordGateway extends WebSocketAdapter {
     public Session getSession() {
         return session;
     }
+
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        log.info(this.state + " -> " + state);
+        this.state = state;
+    }
+
+    public enum State {
+        /**
+         * We just started and are waiting for OP 10 so we can identify
+         */
+        WAITING_FOR_HELLO_TO_IDENTIFY,
+        /**
+         * OP 2 was sent. We should be receiving dispatches soon
+         */
+        IDENTIFYING,
+        /**
+         * READY was received after identified, or RESUMED was received after resuming. Events are being received
+         */
+        CONNECTED,
+        /**
+         * We just opened the socket so we can resume and are waiting for OP 10
+         */
+        WAITING_FOR_HELLO_TO_RESUME,
+        /**
+         * We just sent OP 6 and should be replaying events again
+         */
+        RESUMING,
+        /**
+         * We lost connection and are waiting to reconnect
+         */
+        WAITING_TO_RECONNECT
+
+    }
+
 }
