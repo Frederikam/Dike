@@ -9,6 +9,7 @@ import com.jsoniter.JsonIterator;
 import com.jsoniter.any.Any;
 import fredboat.dike.io.in.DiscordGateway;
 import fredboat.dike.session.cache.Cache;
+import fredboat.dike.session.cache.EntityType;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -43,24 +44,52 @@ public class InDispatchHandler extends IncomingHandler {
             }
         }
 
-        //TODO: Cache
+        EntityType entityType = null;
         assert type != null;
+        switch (type) {
+            case "CHANNEL_CREATE":
+            case "CHANNEL_DELETE":
+                entityType = EntityType.CHANNEL;
+                break;
+            case "MEMBER_ADD":
+            case "MEMBER_REMOVE":
+                entityType = EntityType.MEMBER;
+                break;
+            case "GUILD_ROLE_CREATE":
+            case "GUILD_ROLE_DELETE":
+                entityType = EntityType.ROLE;
+                break;
+            case "GUILD_EMOJI_CREATE":
+            case "GUILD_EMOJI_DELETE":
+                entityType = EntityType.EMOJI;
+                break;
+        }
+
+        if (entityType != null) {
+            switch (type) {
+                case "CHANNEL_CREATE":
+                case "MEMBER_ADD":
+                case "GUILD_ROLE_CREATE":
+                case "GUILD_EMOJI_CREATE":
+                    Any dCreate = JsonIterator.deserialize(message).get("d");
+                    cache.getGuild(dCreate.get("guild_id").toLong())
+                            .createEntity(entityType, dCreate);
+                    break;
+                default:
+                    Any dDelete = JsonIterator.deserialize(message).get("d");
+                    cache.getGuild(dDelete.get("guild_id").toLong())
+                            .deleteEntity(entityType, dDelete);
+                    break;
+            }
+        }
+
+        /* Handle all other switch cases */
         switch (type) {
             case "GUILD_CREATE":
                 cache.createGuild(JsonIterator.deserialize(message).get("d"));
                 break;
             case "GUILD_DELETE":
                 cache.deleteGuild(JsonIterator.deserialize(message).get("d"));
-                break;
-            case "CHANNEL_CREATE":
-                Any dChannelCreate = JsonIterator.deserialize(message).get("d");
-                cache.getGuild(Long.parseLong(dChannelCreate.get("guild_id").as(String.class)))
-                        .createChannel(dChannelCreate);
-                break;
-            case "CHANNEL_DELETE":
-                Any dChannelDelete = JsonIterator.deserialize(message).get("d");
-                cache.getGuild(Long.parseLong(dChannelDelete.get("guild_id").as(String.class)))
-                        .deleteChannel(dChannelDelete);
                 break;
             case "READY":
                 discordGateway.setState(DiscordGateway.State.CONNECTED);

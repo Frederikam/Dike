@@ -15,12 +15,12 @@ public class Cache {
     private static THashMap<Long, Guild> guilds = new THashMap<>();
 
     public void createGuild(Any d) throws IOException {
-        Long id = Long.parseLong(d.get("id").as(String.class));
+        Long id = d.get("id").toLong();
         guilds.put(id, new Guild(d));
     }
 
     public void deleteGuild(Any d) {
-        Long id = Long.parseLong(d.get("d").get("id").as(String.class));
+        Long id = d.get("d").get("id").toLong();
         if(guilds.remove(id) == null) {
             throw new RuntimeException("Attempt to delete guild " + id + " but it doesn't exist!");
         }
