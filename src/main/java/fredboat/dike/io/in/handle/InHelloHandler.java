@@ -31,6 +31,7 @@ public class InHelloHandler extends IncomingHandler {
     public void handle(String message) throws IOException {
         switch (discordGateway.getState()) {
             case WAITING_FOR_HELLO_TO_IDENTIFY:
+                discordGateway.getSession().getCache().invalidate(); // Throw away old entities
                 discordGateway.getSocket().sendText(op2);
                 discordGateway.setState(DiscordGateway.State.IDENTIFYING);
 
