@@ -5,7 +5,7 @@
 
 package fredboat.dike.session.cache;
 
-import com.jsoniter.JsonIterator;
+import com.jsoniter.any.Any;
 import gnu.trove.map.hash.THashMap;
 
 import java.io.IOException;
@@ -14,16 +14,20 @@ public class Cache {
 
     private static THashMap<Long, Guild> guilds = new THashMap<>();
 
-    public void createGuild(String json) throws IOException {
-        Long id = JsonIterator.deserialize(json).get("d").get("id").as(Long.class);
-        guilds.put(id, new Guild(json));
+    public void createGuild(Any d) throws IOException {
+        Long id = Long.parseLong(d.get("id").as(String.class));
+        guilds.put(id, new Guild(d));
     }
 
-    public void deleteGuild(String json) {
-        Long id = JsonIterator.deserialize(json).get("d").get("id").as(Long.class);
+    public void deleteGuild(Any d) {
+        Long id = Long.parseLong(d.get("d").get("id").as(String.class));
         if(guilds.remove(id) == null) {
             throw new RuntimeException("Attempt to delete guild " + id + " but it doesn't exist!");
         }
+    }
+
+    public Guild getGuild(long id) {
+        return guilds.get(id);
     }
 
     /**

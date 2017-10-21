@@ -6,6 +6,7 @@
 package fredboat.dike.io.in.handle;
 
 import com.jsoniter.JsonIterator;
+import com.jsoniter.any.Any;
 import fredboat.dike.io.in.DiscordGateway;
 import fredboat.dike.session.cache.Cache;
 import org.json.JSONObject;
@@ -46,10 +47,20 @@ public class InDispatchHandler extends IncomingHandler {
         assert type != null;
         switch (type) {
             case "GUILD_CREATE":
-                cache.createGuild(message);
+                cache.createGuild(JsonIterator.deserialize(message).get("d"));
                 break;
             case "GUILD_DELETE":
-                cache.deleteGuild(message);
+                cache.deleteGuild(JsonIterator.deserialize(message).get("d"));
+                break;
+            case "CHANNEL_CREATE":
+                Any dChannelCreate = JsonIterator.deserialize(message).get("d");
+                cache.getGuild(Long.parseLong(dChannelCreate.get("guild_id").as(String.class)))
+                        .createChannel(dChannelCreate);
+                break;
+            case "CHANNEL_DELETE":
+                Any dChannelDelete = JsonIterator.deserialize(message).get("d");
+                cache.getGuild(Long.parseLong(dChannelDelete.get("guild_id").as(String.class)))
+                        .deleteChannel(dChannelDelete);
                 break;
             case "READY":
                 discordGateway.setState(DiscordGateway.State.CONNECTED);
