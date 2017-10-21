@@ -10,13 +10,14 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketFrame;
-import fredboat.dike.session.Session;
 import fredboat.dike.io.in.handle.InDispatchHandler;
 import fredboat.dike.io.in.handle.InForwardingHandler;
 import fredboat.dike.io.in.handle.InHelloHandler;
 import fredboat.dike.io.in.handle.InInvalidateSessionHandler;
 import fredboat.dike.io.in.handle.InNOPHandler;
 import fredboat.dike.io.in.handle.IncomingHandler;
+import fredboat.dike.session.Session;
+import fredboat.dike.session.cache.Cache;
 import fredboat.dike.util.CloseCodes;
 import fredboat.dike.util.JsonHandler;
 import fredboat.dike.util.OpCodes;
@@ -51,10 +52,12 @@ public class DiscordGateway extends WebSocketAdapter {
     private volatile boolean locked = true;
     private volatile State state = WAITING_FOR_HELLO_TO_IDENTIFY;
     private int failedConnectAttempts = 0;
+    private final Cache cache;
 
     public DiscordGateway(Session session, URI url, String op2) throws IOException, WebSocketException {
         this.session = session;
         this.url = url;
+        this.cache = session.getCache();
 
         handlers.add(OpCodes.OP_0_DISPATCH, new InDispatchHandler(this));
         handlers.add(OpCodes.OP_1_HEARTBEAT, new InNOPHandler(this)); // We may want to implement this
@@ -168,20 +171,23 @@ public class DiscordGateway extends WebSocketAdapter {
 
         if (!closedByServer
                 && clientCloseFrame != null
-                && clientCloseFrame.getCloseCode() == CloseCodes.GRACEFUL_CLOSE.getCode()) {
+                && clientCloseFrame.getCloseCode() == CloseCodes.GRACEFUL_CLOSE.getCode())
             shouldResume = false;
-        }
 
         if (state == IDENTIFYING
-                || state == WAITING_FOR_HELLO_TO_IDENTIFY) {
+                || state == WAITING_FOR_HELLO_TO_IDENTIFY)
             shouldResume = false;
-        }
+
+        // See what the OP 9 handler has to say
+        if(((InInvalidateSessionHandler) handlers.get(OpCodes.OP_9_INVALIDATE_SESSION)).shouldIdentify())
+            shouldResume = false;
 
         if (shouldResume) {
             setState(WAITING_FOR_HELLO_TO_RESUME);
         } else {
             setState(WAITING_FOR_HELLO_TO_IDENTIFY);
         }
+
         connect();
     }
 

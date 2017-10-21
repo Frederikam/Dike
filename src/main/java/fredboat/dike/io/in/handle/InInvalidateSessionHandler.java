@@ -7,10 +7,16 @@ package fredboat.dike.io.in.handle;
 
 import fredboat.dike.io.in.DiscordGateway;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class InInvalidateSessionHandler extends IncomingHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(InInvalidateSessionHandler.class);
+
+    private boolean willIdentify = false;
 
     public InInvalidateSessionHandler(DiscordGateway discordGateway) {
         super(discordGateway);
@@ -18,8 +24,19 @@ public class InInvalidateSessionHandler extends IncomingHandler {
 
     @Override
     public void handle(String message) throws IOException {
-        discordGateway.getSession().invalidate(
-                new JSONObject(message).getBoolean("d")
-        );
+        willIdentify = !new JSONObject(message).getBoolean("d");
+        log.info("Received OP 9. May resume: " + !willIdentify);
+
+        discordGateway.getSocket().disconnect(1000, "OP 9");
     }
+
+    public boolean shouldIdentify() {
+        if (willIdentify) {
+            willIdentify = false;
+            return true;
+        }
+        return false;
+    }
+
+
 }

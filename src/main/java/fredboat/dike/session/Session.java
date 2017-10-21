@@ -9,6 +9,7 @@ import com.neovisionaries.ws.client.WebSocketException;
 import fredboat.dike.io.in.DiscordGateway;
 import fredboat.dike.io.in.DiscordQueuePoller;
 import fredboat.dike.io.out.LocalGateway;
+import fredboat.dike.session.cache.Cache;
 import fredboat.dike.util.GatewayUtil;
 import org.java_websocket.WebSocket;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ public class Session {
     private final DiscordQueuePoller poller;
     private LocalGateway localGateway;
     private WebSocket localSocket = null;
+    private Cache cache = new Cache();
 
     Session(ShardIdentifier identifier, LocalGateway localGateway, WebSocket localSocket, String op2) {
         this.identifier = identifier;
@@ -70,12 +72,7 @@ public class Session {
         this.localSocket = localSocket;
     }
 
-    /**
-     * Invoked upon getting OP 9
-     *
-     * @param d the "d" value from the OP 9
-     */
-    public void invalidate(boolean d) {
-        //TODO
+    public Cache getCache() {
+        return cache;
     }
 }
