@@ -48,6 +48,7 @@ public class InDispatchHandler extends IncomingHandler {
         assert type != null;
         switch (type) {
             case "CHANNEL_CREATE":
+            case "CHANNEL_UPDATE":
             case "CHANNEL_DELETE":
                 entityType = EntityType.CHANNEL;
                 break;
@@ -56,10 +57,12 @@ public class InDispatchHandler extends IncomingHandler {
                 entityType = EntityType.MEMBER;
                 break;
             case "GUILD_ROLE_CREATE":
+            case "GUILD_ROLE_UPDATE":
             case "GUILD_ROLE_DELETE":
                 entityType = EntityType.ROLE;
                 break;
             case "GUILD_EMOJI_CREATE":
+            case "GUILD_EMOJI_UPDATE":
             case "GUILD_EMOJI_DELETE":
                 entityType = EntityType.EMOJI;
                 break;
@@ -71,6 +74,10 @@ public class InDispatchHandler extends IncomingHandler {
                 case "MEMBER_ADD":
                 case "GUILD_ROLE_CREATE":
                 case "GUILD_EMOJI_CREATE":
+
+                case "CHANNEL_UPDATE":
+                case "GUILD_ROLE_UPDATE":
+                case "GUILD_EMOJI_UPDATE":
                     Any dCreate = JsonIterator.deserialize(message).get("d");
                     cache.getGuild(dCreate.get("guild_id").toLong())
                             .createEntity(entityType, dCreate);
