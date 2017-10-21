@@ -36,6 +36,18 @@ public class Guild {
         }
     }
 
+    public void update(Any d) {
+        this.d = d;
+
+        // Just for good measure. These arrays are present in GUILD_UPDATE unlike members and channels
+        for (Any payload : d.get("roles").asList()) {
+            createEntity(EntityType.ROLE, payload);
+        }
+        for (Any payload : d.get("emojis").asList()) {
+            createEntity(EntityType.EMOJI, payload);
+        }
+    }
+
     public void createEntity(EntityType type, Any payload) {
         long id = payload.get("id").toLong();
 

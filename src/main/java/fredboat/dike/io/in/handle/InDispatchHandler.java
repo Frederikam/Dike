@@ -103,7 +103,11 @@ public class InDispatchHandler extends IncomingHandler {
             case "GUILD_CREATE":
                 cache.createGuild(JsonIterator.deserialize(message).get("d"));
                 break;
-            //case "GUILD_UPDATE": //TODO
+            case "GUILD_UPDATE":
+                Any dUpdate = JsonIterator.deserialize(message).get("d");
+                cache.getGuild(dUpdate.get("guild_id").toLong())
+                        .update(dUpdate);
+                break;
             //case "PRESENCE_UPDATE": //TODO
             case "GUILD_DELETE":
                 cache.deleteGuild(JsonIterator.deserialize(message).get("d"));
