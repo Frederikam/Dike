@@ -10,6 +10,7 @@ import com.jsoniter.any.Any;
 import fredboat.dike.io.in.DiscordGateway;
 import fredboat.dike.session.cache.Cache;
 import fredboat.dike.session.cache.EntityType;
+import fredboat.dike.session.cache.Guild;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -92,12 +93,6 @@ public class InDispatchHandler extends IncomingHandler {
 
         /* Handle all other switch cases */
         switch (type) {
-            case "GUILD_CREATE":
-                cache.createGuild(JsonIterator.deserialize(message).get("d"));
-                break;
-            case "GUILD_DELETE":
-                cache.deleteGuild(JsonIterator.deserialize(message).get("d"));
-                break;
             case "READY":
                 discordGateway.setState(DiscordGateway.State.CONNECTED);
                 sessionId = new JSONObject(message).getJSONObject("d").getString("session_id");
@@ -105,6 +100,24 @@ public class InDispatchHandler extends IncomingHandler {
             case "RESUMED":
                 discordGateway.setState(DiscordGateway.State.CONNECTED);
                 break;
+            case "GUILD_CREATE":
+                cache.createGuild(JsonIterator.deserialize(message).get("d"));
+                break;
+            //case "GUILD_UPDATE": //TODO
+            //case "PRESENCE_UPDATE": //TODO
+            case "GUILD_DELETE":
+                cache.deleteGuild(JsonIterator.deserialize(message).get("d"));
+                break;
+            case "GUILD_MEMBERS_CHUNK":
+                Any dChunk = JsonIterator.deserialize(message).get("d");
+                Guild guild = cache.getGuild(dChunk.get("guild_id").toLong());
+
+                for (Any any : dChunk.get("members").asList()) {
+                    guild.createEntity(EntityType.MEMBER, any);
+                }
+                break;
+            case "TYPING_START":
+                return; // Ignore, don't forward
         }
 
         discordGateway.forward(message);
