@@ -7,6 +7,7 @@ package fredboat.dike.io.in.handle;
 
 import com.jsoniter.JsonIterator;
 import fredboat.dike.io.in.DiscordGateway;
+import fredboat.dike.session.cache.Cache;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -15,10 +16,12 @@ public class InDispatchHandler extends IncomingHandler {
 
     public InDispatchHandler(DiscordGateway discordGateway) {
         super(discordGateway);
+        this.cache = discordGateway.getSession().getCache();
     }
 
     private long sequence = -1;
     private String sessionId = null;
+    private final Cache cache;
 
     @Override
     public void handle(String message) throws IOException {
@@ -42,6 +45,12 @@ public class InDispatchHandler extends IncomingHandler {
         //TODO: Cache
         assert type != null;
         switch (type) {
+            case "GUILD_CREATE":
+                cache.createGuild(message);
+                break;
+            case "GUILD_DELETE":
+                cache.deleteGuild(message);
+                break;
             case "READY":
                 discordGateway.setState(DiscordGateway.State.CONNECTED);
                 sessionId = new JSONObject(message).getJSONObject("d").getString("session_id");

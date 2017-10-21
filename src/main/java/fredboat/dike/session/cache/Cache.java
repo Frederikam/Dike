@@ -14,13 +14,13 @@ public class Cache {
 
     private static THashMap<Long, Guild> guilds = new THashMap<>();
 
-    private void createGuild(String json) throws IOException {
-        Long id = JsonIterator.deserialize(json).get("id").as(Long.class);
+    public void createGuild(String json) throws IOException {
+        Long id = JsonIterator.deserialize(json).get("d").get("id").as(Long.class);
         guilds.put(id, new Guild(json));
     }
 
-    private void deleteGuild(String json) {
-        Long id = JsonIterator.deserialize(json).get("id").as(Long.class);
+    public void deleteGuild(String json) {
+        Long id = JsonIterator.deserialize(json).get("d").get("id").as(Long.class);
         if(guilds.remove(id) == null) {
             throw new RuntimeException("Attempt to delete guild " + id + " but it doesn't exist!");
         }
