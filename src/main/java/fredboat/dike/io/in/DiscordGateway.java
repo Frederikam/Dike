@@ -172,6 +172,11 @@ public class DiscordGateway extends WebSocketAdapter {
             shouldResume = false;
         }
 
+        if (state == IDENTIFYING
+                || state == WAITING_FOR_HELLO_TO_IDENTIFY) {
+            shouldResume = false;
+        }
+
         if (shouldResume) {
             setState(WAITING_FOR_HELLO_TO_RESUME);
         } else {
