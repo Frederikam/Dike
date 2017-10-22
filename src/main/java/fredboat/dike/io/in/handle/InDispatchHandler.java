@@ -69,26 +69,28 @@ public class InDispatchHandler extends IncomingHandler {
                 break;
         }
 
-        if (entityType != null) {
-            switch (type) {
-                case "CHANNEL_CREATE":
-                case "GUILD_MEMBER_ADD":
-                case "GUILD_ROLE_CREATE":
-                case "GUILD_EMOJI_CREATE":
+        if (entityType != null) switch (type) {
+            case "CHANNEL_CREATE":
+            case "GUILD_MEMBER_ADD":
+            case "GUILD_ROLE_CREATE":
+            case "GUILD_EMOJI_CREATE":
 
-                case "CHANNEL_UPDATE":
-                case "GUILD_ROLE_UPDATE":
-                case "GUILD_EMOJI_UPDATE":
-                    Any dCreate = JsonIterator.deserialize(message).get("d");
-                    cache.getGuild(dCreate.get("guild_id").toLong())
-                            .createEntity(entityType, dCreate);
-                    break;
-                default:
-                    Any dDelete = JsonIterator.deserialize(message).get("d");
-                    cache.getGuild(dDelete.get("guild_id").toLong())
-                            .deleteEntity(entityType, dDelete);
-                    break;
-            }
+            case "CHANNEL_UPDATE":
+            case "GUILD_ROLE_UPDATE":
+            case "GUILD_EMOJI_UPDATE":
+                Any dCreate = JsonIterator.deserialize(message).get("d");
+                Guild guild1 = cache.getGuild(dCreate.get("guild_id").toLong());
+
+                assert guild1 != null : "Received " + type + " for unknown guild!";
+                guild1.createEntity(entityType, dCreate);
+                break;
+            default:
+                Any dDelete = JsonIterator.deserialize(message).get("d");
+                Guild guild2 = cache.getGuild(dDelete.get("guild_id").toLong());
+
+                assert guild2 != null : "Received " + type + " for unknown guild!";
+                guild2.deleteEntity(entityType, dDelete);
+                break;
         }
 
         /* Handle all other switch cases */
@@ -105,18 +107,21 @@ public class InDispatchHandler extends IncomingHandler {
                 break;
             case "GUILD_UPDATE":
                 Any dUpdate = JsonIterator.deserialize(message).get("d");
-                cache.getGuild(dUpdate.get("guild_id").toLong())
-                        .update(dUpdate);
+                Guild guildUpdate = cache.getGuild(dUpdate.get("guild_id").toLong());
+
+                assert guildUpdate != null : "Received " + type + " for unknown guild!";
+                guildUpdate.update(dUpdate);
                 break;
             case "GUILD_DELETE":
                 cache.deleteGuild(JsonIterator.deserialize(message).get("d"));
                 break;
             case "GUILD_MEMBERS_CHUNK":
                 Any dChunk = JsonIterator.deserialize(message).get("d");
-                Guild guild = cache.getGuild(dChunk.get("guild_id").toLong());
+                Guild guildChunking = cache.getGuild(dChunk.get("guild_id").toLong());
 
+                assert guildChunking != null : "Received " + type + " for unknown guild!";
                 for (Any any : dChunk.get("members").asList()) {
-                    guild.createEntity(EntityType.MEMBER, any);
+                    guildChunking.createEntity(EntityType.MEMBER, any);
                 }
                 break;
             case "VOICE_STATE_UPDATE":
