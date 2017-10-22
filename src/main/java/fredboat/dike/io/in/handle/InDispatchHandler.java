@@ -94,52 +94,54 @@ public class InDispatchHandler extends IncomingHandler {
         }
 
         /* Handle all other switch cases */
-        switch (type) {
-            case "READY":
-                discordGateway.setState(DiscordGateway.State.CONNECTED);
-                sessionId = new JSONObject(message).getJSONObject("d").getString("session_id");
-                break;
-            case "RESUMED":
-                discordGateway.setState(DiscordGateway.State.CONNECTED);
-                break;
-            case "GUILD_CREATE":
-                cache.createGuild(JsonIterator.deserialize(message).get("d"));
-                break;
-            case "GUILD_UPDATE":
-                Any dUpdate = JsonIterator.deserialize(message).get("d");
-                Guild guildUpdate = cache.getGuild(dUpdate.get("guild_id").toLong());
+        synchronized (cache) {
+            switch (type) {
+                case "READY":
+                    discordGateway.setState(DiscordGateway.State.CONNECTED);
+                    sessionId = new JSONObject(message).getJSONObject("d").getString("session_id");
+                    break;
+                case "RESUMED":
+                    discordGateway.setState(DiscordGateway.State.CONNECTED);
+                    break;
+                case "GUILD_CREATE":
+                    cache.createGuild(JsonIterator.deserialize(message).get("d"));
+                    break;
+                case "GUILD_UPDATE":
+                    Any dUpdate = JsonIterator.deserialize(message).get("d");
+                    Guild guildUpdate = cache.getGuild(dUpdate.get("guild_id").toLong());
 
-                assert guildUpdate != null : "Received " + type + " for unknown guild!";
-                guildUpdate.update(dUpdate);
-                break;
-            case "GUILD_DELETE":
-                cache.deleteGuild(JsonIterator.deserialize(message).get("d"));
-                break;
-            case "GUILD_MEMBERS_CHUNK":
-                Any dChunk = JsonIterator.deserialize(message).get("d");
-                Guild guildChunking = cache.getGuild(dChunk.get("guild_id").toLong());
+                    assert guildUpdate != null : "Received " + type + " for unknown guild!";
+                    guildUpdate.update(dUpdate);
+                    break;
+                case "GUILD_DELETE":
+                    cache.deleteGuild(JsonIterator.deserialize(message).get("d"));
+                    break;
+                case "GUILD_MEMBERS_CHUNK":
+                    Any dChunk = JsonIterator.deserialize(message).get("d");
+                    Guild guildChunking = cache.getGuild(dChunk.get("guild_id").toLong());
 
-                assert guildChunking != null : "Received " + type + " for unknown guild!";
-                for (Any any : dChunk.get("members").asList()) {
-                    guildChunking.createEntity(EntityType.MEMBER, any);
-                }
-                break;
-            case "VOICE_STATE_UPDATE":
-                Any dVoice = JsonIterator.deserialize(message).get("d");
-                Guild stateGuild = cache.getGuild(dVoice.get("guild_id").toLong());
+                    assert guildChunking != null : "Received " + type + " for unknown guild!";
+                    for (Any any : dChunk.get("members").asList()) {
+                        guildChunking.createEntity(EntityType.MEMBER, any);
+                    }
+                    break;
+                case "VOICE_STATE_UPDATE":
+                    Any dVoice = JsonIterator.deserialize(message).get("d");
+                    Guild stateGuild = cache.getGuild(dVoice.get("guild_id").toLong());
 
-                assert stateGuild != null : "Received VOICE_STATE_UPDATE for unknown guild!";
-                stateGuild.setVoiceState(dVoice);
-                break;
-            case "PRESENCE_UPDATE":
-                Any dPres = JsonIterator.deserialize(message).get("d");
-                Guild guildPres = cache.getGuild(dPres.get("guild_id").toLong());
+                    assert stateGuild != null : "Received VOICE_STATE_UPDATE for unknown guild!";
+                    stateGuild.setVoiceState(dVoice);
+                    break;
+                case "PRESENCE_UPDATE":
+                    Any dPres = JsonIterator.deserialize(message).get("d");
+                    Guild guildPres = cache.getGuild(dPres.get("guild_id").toLong());
 
-                assert guildPres != null : "Received PRESENCE_UPDATE for unknown guild!";
-                guildPres.setPresence(dPres);
-                break;
-            case "TYPING_START":
-                return; // Ignore, don't forward
+                    assert guildPres != null : "Received PRESENCE_UPDATE for unknown guild!";
+                    guildPres.setPresence(dPres);
+                    break;
+                case "TYPING_START":
+                    return; // Ignore, don't forward
+            }
         }
 
         discordGateway.forward(message);

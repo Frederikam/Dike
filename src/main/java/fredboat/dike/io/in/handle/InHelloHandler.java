@@ -7,6 +7,7 @@ package fredboat.dike.io.in.handle;
 
 import fredboat.dike.io.in.DiscordGateway;
 import fredboat.dike.io.in.Heartbeater;
+import fredboat.dike.session.cache.Cache;
 import fredboat.dike.util.OpCodes;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -21,17 +22,21 @@ public class InHelloHandler extends IncomingHandler {
     private final String op2;
     @SuppressWarnings("FieldCanBeLocal")
     private Heartbeater heartbeater = null;
+    private final Cache cache;
 
     public InHelloHandler(DiscordGateway discordGateway, String op2) {
         super(discordGateway);
         this.op2 = op2;
+        this.cache = discordGateway.getSession().getCache();
     }
 
     @Override
     public void handle(String message) throws IOException {
         switch (discordGateway.getState()) {
             case WAITING_FOR_HELLO_TO_IDENTIFY:
-                discordGateway.getSession().getCache().invalidate(); // Throw away old entities
+                synchronized (cache) {
+                    cache.invalidate(); // Throw away old entities
+                }
                 discordGateway.getSocket().sendText(op2);
                 discordGateway.setState(DiscordGateway.State.IDENTIFYING);
 
