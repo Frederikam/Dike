@@ -5,6 +5,7 @@
 
 package fredboat.dike.session.cache;
 
+import com.jsoniter.ValueType;
 import com.jsoniter.any.Any;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,6 +17,7 @@ public class Guild {
     private ConcurrentHashMap<Long, Any> members = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Long, Any> roles = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Long, Any> emojis = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Long, Any> voiceState = new ConcurrentHashMap<>();
 
     Guild(Any d) {
         this.d = d;
@@ -33,6 +35,10 @@ public class Guild {
 
         for (Any payload : d.get("emojis").asList()) {
             createEntity(EntityType.EMOJI, payload);
+        }
+
+        for (Any payload : d.get("voice_states").asList()) {
+            setVoiceState(payload);
         }
     }
 
@@ -83,6 +89,17 @@ public class Guild {
             case EMOJI:
                 emojis.remove(id);
                 break;
+        }
+    }
+
+    public void setVoiceState(Any payload) {
+        long id = payload.get("user_id").toLong();
+
+        if (payload.get("channel_id").valueType() == ValueType.NULL) {
+            // No channel means that the user left
+            voiceState.remove(id);
+        } else {
+            voiceState.put(id, payload);
         }
     }
 

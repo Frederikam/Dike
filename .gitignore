@@ -2,3 +2,4 @@
 /.idea/
 /target/
 /sample-dispatches.json
+/dependency-reduced-pom.xml

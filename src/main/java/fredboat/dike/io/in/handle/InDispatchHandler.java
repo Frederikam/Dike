@@ -120,6 +120,13 @@ public class InDispatchHandler extends IncomingHandler {
                     guild.createEntity(EntityType.MEMBER, any);
                 }
                 break;
+            case "VOICE_STATE_UPDATE":
+                Any dVoice = JsonIterator.deserialize(message).get("d");
+                Guild stateGuild = cache.getGuild(dVoice.get("guild_id").toLong());
+
+                assert stateGuild != null : "Received VOICE_STATE_UPDATE for unknown guild!";
+                stateGuild.setVoiceState(dVoice);
+                break;
             case "TYPING_START":
                 return; // Ignore, don't forward
         }
