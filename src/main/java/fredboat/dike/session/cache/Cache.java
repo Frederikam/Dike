@@ -6,6 +6,7 @@
 package fredboat.dike.session.cache;
 
 import com.jsoniter.any.Any;
+import com.sun.istack.internal.Nullable;
 import gnu.trove.map.hash.THashMap;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ public class Cache {
         }
     }
 
+    @Nullable
     public Guild getGuild(long id) {
         return guilds.get(id);
     }

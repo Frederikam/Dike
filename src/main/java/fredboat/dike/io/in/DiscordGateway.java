@@ -5,6 +5,7 @@
 
 package fredboat.dike.io.in;
 
+import com.neovisionaries.ws.client.ThreadType;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketException;
@@ -98,6 +99,11 @@ public class DiscordGateway extends WebSocketAdapter {
 
         // send the inflated message to the TextMessage method
         onTextMessage(websocket, out.toString("UTF-8"));
+    }
+
+    @Override
+    public void onThreadCreated(WebSocket websocket, ThreadType threadType, Thread thread) throws Exception {
+        thread.setName("Discord " + thread.getName() + " " + getSession().getIdentifier().toStringShort());
     }
 
     @SuppressWarnings("Duplicates")

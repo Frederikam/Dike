@@ -18,6 +18,7 @@ public class Guild {
     private ConcurrentHashMap<Long, Any> roles = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Long, Any> emojis = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Long, Any> voiceState = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Long, Any> presences = new ConcurrentHashMap<>();
 
     Guild(Any d) {
         this.d = d;
@@ -39,6 +40,11 @@ public class Guild {
 
         for (Any payload : d.get("voice_states").asList()) {
             setVoiceState(payload);
+        }
+
+        for (Any payload : d.get("presences").asList()) {
+            // Set directly from here because the constructor guarantees that the user is a member
+            presences.put(payload.get("user").get("id").toLong(), payload);
         }
     }
 
@@ -82,6 +88,7 @@ public class Guild {
                 break;
             case MEMBER:
                 members.remove(id);
+                presences.remove(id);
                 break;
             case ROLE:
                 channels.remove(id);
@@ -101,6 +108,15 @@ public class Guild {
         } else {
             voiceState.put(id, payload);
         }
+    }
+
+    public void setPresence(Any payload) {
+        // Discord updates a presences AFTER GUILD_MEMBER_REMOVE.
+        // We will check for this to avoid leaking memory
+        long id = payload.get("user").get("id").toLong();
+
+        if (members.containsKey(id))
+            presences.put(id, payload);
     }
 
 }

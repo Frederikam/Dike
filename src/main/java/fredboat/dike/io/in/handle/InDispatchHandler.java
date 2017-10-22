@@ -53,8 +53,8 @@ public class InDispatchHandler extends IncomingHandler {
             case "CHANNEL_DELETE":
                 entityType = EntityType.CHANNEL;
                 break;
-            case "MEMBER_ADD":
-            case "MEMBER_REMOVE":
+            case "GUILD_MEMBER_ADD":
+            case "GUILD_MEMBER_REMOVE":
                 entityType = EntityType.MEMBER;
                 break;
             case "GUILD_ROLE_CREATE":
@@ -72,7 +72,7 @@ public class InDispatchHandler extends IncomingHandler {
         if (entityType != null) {
             switch (type) {
                 case "CHANNEL_CREATE":
-                case "MEMBER_ADD":
+                case "GUILD_MEMBER_ADD":
                 case "GUILD_ROLE_CREATE":
                 case "GUILD_EMOJI_CREATE":
 
@@ -108,7 +108,6 @@ public class InDispatchHandler extends IncomingHandler {
                 cache.getGuild(dUpdate.get("guild_id").toLong())
                         .update(dUpdate);
                 break;
-            //case "PRESENCE_UPDATE": //TODO
             case "GUILD_DELETE":
                 cache.deleteGuild(JsonIterator.deserialize(message).get("d"));
                 break;
@@ -126,6 +125,13 @@ public class InDispatchHandler extends IncomingHandler {
 
                 assert stateGuild != null : "Received VOICE_STATE_UPDATE for unknown guild!";
                 stateGuild.setVoiceState(dVoice);
+                break;
+            case "PRESENCE_UPDATE":
+                Any dPres = JsonIterator.deserialize(message).get("d");
+                Guild guildPres = cache.getGuild(dPres.get("guild_id").toLong());
+
+                assert guildPres != null : "Received PRESENCE_UPDATE for unknown guild!";
+                guildPres.setPresence(dPres);
                 break;
             case "TYPING_START":
                 return; // Ignore, don't forward
