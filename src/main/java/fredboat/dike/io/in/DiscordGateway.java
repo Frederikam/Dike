@@ -23,7 +23,6 @@ import fredboat.dike.util.JsonHandler;
 import fredboat.dike.util.OpCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.plugin.dom.exception.InvalidStateException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -220,7 +219,7 @@ public class DiscordGateway extends WebSocketAdapter {
         log.info(this.state + " -> " + state);
 
         if (this.state == SHUTDOWN && state != SHUTDOWN) {
-            throw new InvalidStateException("Can't change state if we are shutdown!");
+            throw new IllegalStateException("Can't change state if we are shutdown!");
         }
 
         this.state = state;
