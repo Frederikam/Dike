@@ -126,19 +126,9 @@ public class Guild {
             presences.put(id, payload);
     }
 
-    /* Dispatches */
-
-    List<Dispatch> computeDispatches() {
-        List<Dispatch> list = new LinkedList<>();
-
-        list.add(computeGuildCreate());
-
-        return list;
-    }
-
-    private Dispatch computeGuildCreate() {
+    Dispatch computeDispatch() {
         Map<String, Any> map = new HashMap<>(d.asMap());
-        
+
         boolean large = cache.getLargeThreshold() <= members.size();
         map.put("large", Any.wrap(large));
 

@@ -53,7 +53,7 @@ public class Cache {
         List<Dispatch> list = new LinkedList<>();
 
         for (Guild guild : guilds.values())
-            list.addAll(guild.computeDispatches());
+            list.add(guild.computeDispatch());
 
         return list;
     }
