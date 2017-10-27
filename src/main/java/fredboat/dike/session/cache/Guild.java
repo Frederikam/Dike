@@ -149,6 +149,7 @@ public class Guild {
         map.put("members", Any.wrap(users));
         map.put("channels", Any.wrap(channels.values()));
         map.put("roles", Any.wrap(roles.values()));
+        map.put("emojis", Any.wrap(emojis.values()));
         map.put("voice_states", Any.wrap(voiceStates.values()));
         map.put("presences", Any.wrap(presences.values()));
 
