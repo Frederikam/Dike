@@ -5,10 +5,11 @@
 
 package fredboat.dike.io.out.handle;
 
+import fredboat.dike.io.out.LocalGateway;
 import fredboat.dike.session.Session;
 import fredboat.dike.session.SessionManager;
 import fredboat.dike.session.ShardIdentifier;
-import fredboat.dike.io.out.LocalGateway;
+import fredboat.dike.util.IdentifyRatelimitHandler;
 import org.java_websocket.WebSocket;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -51,7 +52,16 @@ public class OutIdentifyHandler extends OutgoingHandler {
         d.put("properties", properties);
         json.put("d", d);
 
-        Session session = SessionManager.INSTANCE.createSession(identifier, localGateway, socket, json.toString());
+        Session session = SessionManager.INSTANCE.getSession(identifier);
+
+        if (session == null) {
+            try {
+                IdentifyRatelimitHandler.INSTANCE.acquire(identifier.getUser());
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            session = SessionManager.INSTANCE.createSession(identifier, localGateway, socket, json.toString());
+        }
         localGateway.setSession(session);
     }
 

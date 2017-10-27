@@ -8,6 +8,7 @@ package fredboat.dike.session;
 import fredboat.dike.io.out.LocalGateway;
 import org.java_websocket.WebSocket;
 
+import javax.annotation.Nullable;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionManager {
@@ -16,6 +17,7 @@ public class SessionManager {
 
     private ConcurrentHashMap<ShardIdentifier, Session> sessions = new ConcurrentHashMap<>();
 
+    @Nullable
     public Session getSession(ShardIdentifier identifier) {
         return sessions.get(identifier);
     }

@@ -20,6 +20,7 @@ import fredboat.dike.io.in.handle.IncomingHandler;
 import fredboat.dike.session.Session;
 import fredboat.dike.session.cache.Cache;
 import fredboat.dike.util.CloseCodes;
+import fredboat.dike.util.IdentifyRatelimitHandler;
 import fredboat.dike.util.JsonHandler;
 import fredboat.dike.util.OpCodes;
 import org.slf4j.Logger;
@@ -190,6 +191,9 @@ public class DiscordGateway extends WebSocketAdapter {
         if (shouldResume) {
             setState(WAITING_FOR_HELLO_TO_RESUME);
         } else {
+            setState(IDENTIFY_RATELIMIT);
+            IdentifyRatelimitHandler.INSTANCE.acquire(session.getIdentifier().getUser());
+
             setState(WAITING_FOR_HELLO_TO_IDENTIFY);
         }
 
@@ -259,7 +263,7 @@ public class DiscordGateway extends WebSocketAdapter {
         /**
          * We lost connection and are waiting to reconnect
          */
-        WAITING_TO_RECONNECT,
+        IDENTIFY_RATELIMIT,
         /**
          * Something failed irrecoverably. Most likely cause is that our token got reset
          */

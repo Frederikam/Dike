@@ -25,6 +25,8 @@ import java.util.ArrayList;
 
 public class LocalGateway extends WebSocketServer {
 
+    private static final Logger log = LoggerFactory.getLogger(LocalGateway.class);
+
     private final ArrayList<OutgoingHandler> handlers = new ArrayList<>();
     private final JsonHandler jsonHandler;
     private Session session = null;
@@ -49,8 +51,6 @@ public class LocalGateway extends WebSocketServer {
         handlers.add(OpCodes.OP_11_HEARTBEAT_ACK, new OutNOPHandler(this));
         handlers.add(OpCodes.OP_12_GUILD_SYNC, new OutForwardingHandler(this));
     }
-
-    private static final Logger log = LoggerFactory.getLogger(LocalGateway.class);
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
