@@ -261,7 +261,7 @@ public class DiscordGateway extends WebSocketAdapter {
          */
         RESUMING,
         /**
-         * We lost connection and are waiting to reconnect
+         * We lost connection and are waiting to reconnect and re-identify
          */
         IDENTIFY_RATELIMIT,
         /**

@@ -130,7 +130,7 @@ public class InDispatchHandler extends IncomingHandler {
                     Guild stateGuild = cache.getGuild(dVoice.get("guild_id").toLong());
 
                     assert stateGuild != null : "Received VOICE_STATE_UPDATE for unknown guild!";
-                    stateGuild.setVoiceState(dVoice);
+                    stateGuild.setVoiceStates(dVoice);
                     break;
                 case "PRESENCE_UPDATE":
                     Any dPres = JsonIterator.deserialize(message).get("d");

@@ -8,19 +8,26 @@ package fredboat.dike.session.cache;
 import com.jsoniter.ValueType;
 import com.jsoniter.any.Any;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Guild {
+
+    private final Cache cache;
 
     private Any d;
     private ConcurrentHashMap<Long, Any> channels = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Long, Any> members = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Long, Any> roles = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Long, Any> emojis = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Long, Any> voiceState = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Long, Any> voiceStates = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Long, Any> presences = new ConcurrentHashMap<>();
 
-    Guild(Any d) {
+    Guild(Cache cache, Any d) {
+        this.cache = cache;
         this.d = d;
         for (Any payload : d.get("channels").asList()) {
             createEntity(EntityType.CHANNEL, payload);
@@ -39,7 +46,7 @@ public class Guild {
         }
 
         for (Any payload : d.get("voice_states").asList()) {
-            setVoiceState(payload);
+            setVoiceStates(payload);
         }
 
         for (Any payload : d.get("presences").asList()) {
@@ -99,14 +106,14 @@ public class Guild {
         }
     }
 
-    public void setVoiceState(Any payload) {
+    public void setVoiceStates(Any payload) {
         long id = payload.get("user_id").toLong();
 
         if (payload.get("channel_id").valueType() == ValueType.NULL) {
             // No channel means that the user left
-            voiceState.remove(id);
+            voiceStates.remove(id);
         } else {
-            voiceState.put(id, payload);
+            voiceStates.put(id, payload);
         }
     }
 
@@ -117,6 +124,45 @@ public class Guild {
 
         if (members.containsKey(id))
             presences.put(id, payload);
+    }
+
+    /* Dispatches */
+
+    List<Dispatch> computeDispatches() {
+        List<Dispatch> list = new LinkedList<>();
+
+        list.add(computeGuildCreate());
+
+        return list;
+    }
+
+    private Dispatch computeGuildCreate() {
+        Map<String, Any> map = new HashMap<>(d.asMap());
+        
+        boolean large = cache.getLargeThreshold() <= members.size();
+        map.put("large", Any.wrap(large));
+
+        List<Any> users = new LinkedList<>();
+
+        if (large) {
+            for (Map.Entry<Long, Any> entry : members.entrySet()) {
+                Any presence = presences.get(entry.getKey());
+                if (presence != null
+                        && !presence.get("status").toString().equals("offline")) {
+                    users.add(entry.getValue());
+                }
+            }
+        } else {
+            users.addAll(members.values());
+        }
+
+        map.put("members", Any.wrap(users));
+        map.put("channels", Any.wrap(channels.values()));
+        map.put("roles", Any.wrap(roles.values()));
+        map.put("voice_states", Any.wrap(voiceStates.values()));
+        map.put("presences", Any.wrap(presences.values()));
+
+        return new Dispatch("GUILD_CREATE", map);
     }
 
 }

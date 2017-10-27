@@ -63,6 +63,7 @@ public class OutIdentifyHandler extends OutgoingHandler {
             session = SessionManager.INSTANCE.createSession(identifier, localGateway, socket, json.toString());
         }
         localGateway.setSession(session);
+        session.getCache().setLargeThreshold(d.getInt("large_threshold"));
     }
 
 }
