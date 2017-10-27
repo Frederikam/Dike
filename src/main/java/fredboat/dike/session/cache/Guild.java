@@ -129,12 +129,16 @@ public class Guild {
     Dispatch computeDispatch() {
         Map<String, Any> map = new HashMap<>(d.asMap());
 
+        if (map.get("unavailable").toBoolean()) {
+            // Pray that this doesn't break
+            return new Dispatch("GUILD_CREATE", d.asMap());
+        }
+
         boolean large = cache.getLargeThreshold() <= members.size();
         map.put("large", Any.wrap(large));
 
-        List<Any> users = new LinkedList<>();
-
         if (large) {
+            List<Any> users = new LinkedList<>();
             for (Map.Entry<Long, Any> entry : members.entrySet()) {
                 Any presence = presences.get(entry.getKey());
                 if (presence != null
@@ -142,16 +146,17 @@ public class Guild {
                     users.add(entry.getValue());
                 }
             }
+            map.put("members", Any.wrap(users));
         } else {
-            users.addAll(members.values());
+            map.put("members", Any.wrap(members.values()));
         }
 
-        map.put("members", Any.wrap(users));
         map.put("channels", Any.wrap(channels.values()));
         map.put("roles", Any.wrap(roles.values()));
         map.put("emojis", Any.wrap(emojis.values()));
         map.put("voice_states", Any.wrap(voiceStates.values()));
         map.put("presences", Any.wrap(presences.values()));
+        map.put("member_count", Any.wrap(members.size()));
 
         return new Dispatch("GUILD_CREATE", map);
     }
