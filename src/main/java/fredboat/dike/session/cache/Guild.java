@@ -161,4 +161,8 @@ public class Guild {
         return new Dispatch("GUILD_CREATE", map);
     }
 
+    public long getId() {
+        return d.get("id").toLong();
+    }
+
 }

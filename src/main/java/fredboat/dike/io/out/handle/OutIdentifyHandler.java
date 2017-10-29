@@ -61,7 +61,18 @@ public class OutIdentifyHandler extends OutgoingHandler {
                 throw new RuntimeException(e);
             }
             session = SessionManager.INSTANCE.createSession(identifier, localGateway, socket, json.toString());
+        } else if (session.getLocalSocket().isOpen()) {
+            // A session already exists, but it is already occupied by another client!
+
+            String msg = "Dike doesn't support multiple sessions for the same shard-user pair";
+            log.error(msg);
+            socket.closeConnection(4000, msg);
+            return;
+        } else {
+            // A session already exists, so we'll just read the Dike cache instead
+            session.changeLocalSocket(socket);
         }
+
         localGateway.setSession(session);
         session.getCache().setLargeThreshold(d.getInt("large_threshold"));
     }

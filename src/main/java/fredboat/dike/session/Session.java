@@ -10,6 +10,7 @@ import fredboat.dike.io.in.DiscordGateway;
 import fredboat.dike.io.in.DiscordQueuePoller;
 import fredboat.dike.io.out.LocalGateway;
 import fredboat.dike.session.cache.Cache;
+import fredboat.dike.session.cache.Dispatch;
 import fredboat.dike.util.GatewayUtil;
 import org.java_websocket.WebSocket;
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Session {
 
@@ -30,8 +32,9 @@ public class Session {
     @SuppressWarnings("FieldCanBeLocal")
     private final DiscordQueuePoller poller;
     private LocalGateway localGateway;
-    private WebSocket localSocket = null;
-    private Cache cache = new Cache();
+    private WebSocket localSocket;
+    private final Cache cache = new Cache();
+    private AtomicLong clientSequence = new AtomicLong(0);
 
     Session(ShardIdentifier identifier, LocalGateway localGateway, WebSocket localSocket, String op2) {
         this.identifier = identifier;
@@ -53,6 +56,8 @@ public class Session {
     }
 
     public void sendLocal(String message) {
+        if (!localSocket.isOpen()) return;
+
         localSocket.send(message);
     }
 
@@ -68,8 +73,22 @@ public class Session {
         return localSocket;
     }
 
-    public void setLocalSocket(WebSocket localSocket) {
+    public void changeLocalSocket(WebSocket localSocket) {
+        assert !this.localSocket.isOpen() : "Cannot change local socket if one already is open!";
+        clientSequence.set(0);
+
+        if (discordGateway.getState() != DiscordGateway.State.CONNECTED) {
+            log.warn("To change socket the connection must be {} but it is {}! Waiting for CONNECTED status...");
+        }
+
         this.localSocket = localSocket;
+
+        /* Send dispatches */
+        synchronized (cache) {
+            for (Dispatch dispatch : cache.computeDispatches()) {
+                localSocket.send(dispatch.wrap(clientSequence.getAndIncrement()));
+            }
+        }
     }
 
     public Cache getCache() {

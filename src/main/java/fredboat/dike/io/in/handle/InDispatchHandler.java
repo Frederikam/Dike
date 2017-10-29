@@ -99,6 +99,7 @@ public class InDispatchHandler extends IncomingHandler {
                 case "READY":
                     discordGateway.setState(DiscordGateway.State.CONNECTED);
                     sessionId = new JSONObject(message).getJSONObject("d").getString("session_id");
+                    cache.handleReadyEvent(JsonIterator.deserialize(message));
                     break;
                 case "RESUMED":
                     discordGateway.setState(DiscordGateway.State.CONNECTED);

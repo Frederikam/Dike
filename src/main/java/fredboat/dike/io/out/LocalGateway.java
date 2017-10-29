@@ -5,12 +5,12 @@
 
 package fredboat.dike.io.out;
 
-import fredboat.dike.io.out.handle.OutNOPHandler;
-import fredboat.dike.session.Session;
 import fredboat.dike.io.out.handle.OutForwardingHandler;
 import fredboat.dike.io.out.handle.OutIdentifyHandler;
+import fredboat.dike.io.out.handle.OutNOPHandler;
 import fredboat.dike.io.out.handle.OutResumeHandler;
 import fredboat.dike.io.out.handle.OutgoingHandler;
+import fredboat.dike.session.Session;
 import fredboat.dike.util.JsonHandler;
 import fredboat.dike.util.OpCodes;
 import org.java_websocket.WebSocket;
