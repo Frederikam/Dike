@@ -3,3 +3,6 @@
 /target/
 /sample-dispatches.json
 /dependency-reduced-pom.xml
+/.gradle/
+/out/
+/build/
