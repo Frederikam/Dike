@@ -8,10 +8,7 @@ package fredboat.dike.session.cache;
 import com.jsoniter.ValueType;
 import com.jsoniter.any.Any;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Guild {
@@ -159,6 +156,33 @@ public class Guild {
         map.put("member_count", Any.wrap(members.size()));
 
         return new Dispatch("GUILD_CREATE", map);
+    }
+
+    /**
+     * The bot may request an OP 8 (REQUEST_GUILD_MEMBERS).
+     * Chunking is usually necessary for large guilds, as bots won't receive offline users.
+     *
+     * @return list of chunks, each containing up to 1000 members
+     */
+    List<Dispatch> provideChunks() {
+        List<Any> all = new ArrayList<>(members.values());
+        List<Dispatch> chunks = new LinkedList<>();
+
+        int iterations = (int) Math.ceil(((float) all.size()) / 1000f);
+
+        for (int i = 0; i < iterations; i++) {
+            List<Any> sublist = all.subList(
+                    i * 1000,
+                    Math.min(all.size(), i * 1000 + 1000)
+            );
+
+            HashMap<String, Any> map = new HashMap<>(); // Create a JSON object
+            map.put("members", Any.wrap(sublist)); // Create a JSON array
+
+            chunks.add(new Dispatch("GUILD_MEMBERS_CHUNK", map));
+        }
+
+        return chunks;
     }
 
     public long getId() {
