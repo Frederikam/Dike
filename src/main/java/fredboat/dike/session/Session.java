@@ -79,7 +79,17 @@ public class Session {
 
         if (discordGateway.getState() != DiscordGateway.State.CONNECTED) {
             log.warn("To change socket the connection must be {} but it is {}! Waiting for CONNECTED status...");
+
+            while (discordGateway.getState() != DiscordGateway.State.CONNECTED) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
+
+        log.info("Resuming session from Dike cache for session " + identifier.toStringShort());
 
         this.localSocket = localSocket;
 
