@@ -1,4 +1,4 @@
-`[ ]` Finish cache
+`[x]` Finish cache
 
 `[ ]` Client identify with old session
 
