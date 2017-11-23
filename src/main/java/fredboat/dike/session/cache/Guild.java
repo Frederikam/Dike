@@ -164,7 +164,7 @@ public class Guild {
      *
      * @return list of chunks, each containing up to 1000 members
      */
-    List<Dispatch> provideChunks() {
+    public List<Dispatch> provideChunks() {
         List<Any> all = new ArrayList<>(members.values());
         List<Dispatch> chunks = new LinkedList<>();
 

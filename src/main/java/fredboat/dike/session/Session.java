@@ -6,6 +6,7 @@
 package fredboat.dike.session;
 
 import com.neovisionaries.ws.client.WebSocketException;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import fredboat.dike.io.in.DiscordGateway;
 import fredboat.dike.io.in.DiscordQueuePoller;
 import fredboat.dike.io.out.LocalGateway;
@@ -96,11 +97,21 @@ public class Session {
         /* Send dispatches */
         synchronized (cache) {
             for (Dispatch dispatch : cache.computeDispatches()) {
-                localSocket.send(dispatch.wrap(clientSequence.getAndIncrement()));
+                sendDispatch(dispatch);
             }
         }
     }
 
+    /**
+     * Send a dispatch to the client
+     *
+     * @param dispatch the Dispatch to send
+     */
+    public void sendDispatch(Dispatch dispatch) {
+        localSocket.send(dispatch.wrap(clientSequence.getAndIncrement()));
+    }
+
+    @NonNull
     public Cache getCache() {
         return cache;
     }

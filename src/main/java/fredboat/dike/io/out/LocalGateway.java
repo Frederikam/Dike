@@ -103,6 +103,10 @@ public class LocalGateway extends WebSocketServer {
         session.sendDiscord(string);
     }
 
+    public Session getSession() {
+        return session;
+    }
+
     public void setSession(Session session) {
         this.session = session;
     }
