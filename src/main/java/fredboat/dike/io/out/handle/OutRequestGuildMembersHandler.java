@@ -1,7 +1,6 @@
 package fredboat.dike.io.out.handle;
 
 import com.jsoniter.JsonIterator;
-import com.jsoniter.any.Any;
 import fredboat.dike.io.out.LocalGateway;
 import fredboat.dike.session.Session;
 import fredboat.dike.session.cache.Cache;
@@ -25,7 +24,7 @@ public class OutRequestGuildMembersHandler extends OutgoingHandler {
     public void handle(WebSocket socket, String message) throws IOException {
         String gId = JsonIterator.deserialize(message).get("d").get("guildId").toString();
 
-        Session session = localGateway.getSession();
+        Session session = localGateway.getSession(socket);
         Cache cache = session.getCache();
         Guild guild;
 

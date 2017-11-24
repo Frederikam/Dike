@@ -73,7 +73,7 @@ public class OutIdentifyHandler extends OutgoingHandler {
             session.changeLocalSocket(socket);
         }
 
-        localGateway.setSession(session);
+        localGateway.setSession(socket, session);
         session.getCache().setLargeThreshold(d.getInt("large_threshold"));
     }
 

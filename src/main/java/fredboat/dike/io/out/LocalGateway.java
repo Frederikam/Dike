@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LocalGateway extends WebSocketServer {
 
@@ -29,7 +30,7 @@ public class LocalGateway extends WebSocketServer {
 
     private final ArrayList<OutgoingHandler> handlers = new ArrayList<>();
     private final JsonHandler jsonHandler;
-    private Session session = null;
+    private ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
 
     public LocalGateway() {
         super(new InetSocketAddress(9999));
@@ -66,6 +67,7 @@ public class LocalGateway extends WebSocketServer {
             log.info("Closed connection from " + conn.getRemoteSocketAddress()
                     + " :: remote = " + remote);
         }
+        sessions.remove(conn.getResourceDescriptor());
     }
 
     @Override
@@ -85,7 +87,7 @@ public class LocalGateway extends WebSocketServer {
             }
         } else {
             log.warn("Unhandled opcode: " + op + " Forwarding the message");
-            forward(message);
+            forward(conn, message);
         }
     }
 
@@ -99,15 +101,15 @@ public class LocalGateway extends WebSocketServer {
         log.info("Started listening on " + getAddress());
     }
 
-    public void forward(String string) {
-        session.sendDiscord(string);
+    public void forward(WebSocket conn, String string) {
+        getSession(conn).sendDiscord(string);
     }
 
-    public Session getSession() {
-        return session;
+    public Session getSession(WebSocket conn) {
+        return sessions.get(conn.getResourceDescriptor());
     }
 
-    public void setSession(Session session) {
-        this.session = session;
+    public void setSession(WebSocket conn, Session session) {
+        sessions.put(conn.getResourceDescriptor(), session);
     }
 }

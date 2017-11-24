@@ -15,6 +15,6 @@ public class OutForwardingHandler extends OutgoingHandler {
 
     @Override
     public void handle(WebSocket socket, String message) {
-        localGateway.forward(message);
+        localGateway.forward(socket, message);
     }
 }
