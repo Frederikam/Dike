@@ -1,6 +1,6 @@
 `[x]` Finish cache
 
-`[ ]` Client identify with old session
+`[x]` Client identify with old session
 
 `[ ]` Kill unused sessions
 
