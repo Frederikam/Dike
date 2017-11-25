@@ -6,4 +6,4 @@
 /.gradle/
 /out/
 /build/
-dike.cfg
+src/main/java/fredboat/dike/.DS_Store
