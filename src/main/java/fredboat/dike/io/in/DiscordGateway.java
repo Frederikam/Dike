@@ -5,18 +5,8 @@
 
 package fredboat.dike.io.in;
 
-import com.neovisionaries.ws.client.ThreadType;
-import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketAdapter;
-import com.neovisionaries.ws.client.WebSocketException;
-import com.neovisionaries.ws.client.WebSocketFactory;
-import com.neovisionaries.ws.client.WebSocketFrame;
-import fredboat.dike.io.in.handle.InDispatchHandler;
-import fredboat.dike.io.in.handle.InForwardingHandler;
-import fredboat.dike.io.in.handle.InHelloHandler;
-import fredboat.dike.io.in.handle.InInvalidateSessionHandler;
-import fredboat.dike.io.in.handle.InNOPHandler;
-import fredboat.dike.io.in.handle.IncomingHandler;
+import com.neovisionaries.ws.client.*;
+import fredboat.dike.io.in.handle.*;
 import fredboat.dike.session.Session;
 import fredboat.dike.session.cache.Cache;
 import fredboat.dike.util.CloseCodes;
@@ -185,7 +175,7 @@ public class DiscordGateway extends WebSocketAdapter {
             shouldResume = false;
 
         // See what the OP 9 handler has to say
-        if(((InInvalidateSessionHandler) handlers.get(OpCodes.OP_9_INVALIDATE_SESSION)).shouldIdentify())
+        if (((InInvalidateSessionHandler) handlers.get(OpCodes.OP_9_INVALIDATE_SESSION)).shouldIdentify())
             shouldResume = false;
 
         if (shouldResume) {

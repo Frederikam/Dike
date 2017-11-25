@@ -23,5 +23,4 @@ public class OpCodes {
     public static final int OP_12_GUILD_SYNC = 12;
 
 
-
 }

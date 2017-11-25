@@ -43,7 +43,7 @@ public class ShardIdentifier {
 
         Response response = http.newCall(request).execute();
 
-        if(response.code() != 200) {
+        if (response.code() != 200) {
             log.warn("Not code 200: " + response.code());
         }
 

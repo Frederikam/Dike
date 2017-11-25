@@ -16,8 +16,8 @@ public class Ratelimit {
     private final Consumer<Ratelimit> ratelimitedCallback;
 
     /**
-     * @param limit the limit of this Ratelimit
-     * @param resetCallback Function invoked upon resetting the remaining limit and upon construction. Should return the new reset time
+     * @param limit               the limit of this Ratelimit
+     * @param resetCallback       Function invoked upon resetting the remaining limit and upon construction. Should return the new reset time
      * @param ratelimitedCallback Consumer that is invoked upon getting ratelimited
      */
     public Ratelimit(int limit, Function<Ratelimit, Instant> resetCallback, Consumer<Ratelimit> ratelimitedCallback) {
