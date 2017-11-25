@@ -6,6 +6,6 @@
 
 `[ ]` OP 2 queue
 
-`[ ]` Port configuration
+`[x]` Port configuration
 
 `[ ]` Authentication
