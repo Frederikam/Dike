@@ -54,9 +54,9 @@ public class InHelloHandler extends IncomingHandler {
                 op6.put("op", OpCodes.OP_6_RESUME);
 
                 JSONObject d = new JSONObject();
-                d.put("seq", ((InDispatchHandler)discordGateway.getHandler(OpCodes.OP_0_DISPATCH)).getSequence());
+                d.put("seq", ((InDispatchHandler) discordGateway.getHandler(OpCodes.OP_0_DISPATCH)).getSequence());
                 d.put("token", discordGateway.getSession().getIdentifier().getToken());
-                d.put("session_id", ((InDispatchHandler)discordGateway.getHandler(OpCodes.OP_0_DISPATCH)).getSessionId());
+                d.put("session_id", ((InDispatchHandler) discordGateway.getHandler(OpCodes.OP_0_DISPATCH)).getSessionId());
                 op6.put("d", d);
 
                 discordGateway.getSocket().sendText(op6.toString());

@@ -1,5 +1,3 @@
-
-
 package fredboat.dike.session.cache;
 
 import com.jsoniter.any.Any;

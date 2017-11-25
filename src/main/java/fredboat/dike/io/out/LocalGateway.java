@@ -5,12 +5,9 @@
 
 package fredboat.dike.io.out;
 
-import fredboat.dike.io.out.handle.OutForwardingHandler;
-import fredboat.dike.io.out.handle.OutIdentifyHandler;
-import fredboat.dike.io.out.handle.OutNOPHandler;
-import fredboat.dike.io.out.handle.OutResumeHandler;
-import fredboat.dike.io.out.handle.OutgoingHandler;
+import fredboat.dike.io.out.handle.*;
 import fredboat.dike.session.Session;
+import fredboat.dike.Config;
 import fredboat.dike.util.JsonHandler;
 import fredboat.dike.util.OpCodes;
 import org.java_websocket.WebSocket;
@@ -33,7 +30,7 @@ public class LocalGateway extends WebSocketServer {
     private ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
 
     public LocalGateway() {
-        super(new InetSocketAddress(9999));
+        super(new InetSocketAddress(Config.dike_host, Config.dike_port));
 
         jsonHandler = new JsonHandler();
 
