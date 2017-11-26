@@ -9,6 +9,7 @@ import fredboat.dike.io.out.LocalGateway;
 import org.java_websocket.WebSocket;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionManager {
@@ -16,6 +17,10 @@ public class SessionManager {
     public static final SessionManager INSTANCE = new SessionManager();
 
     private ConcurrentHashMap<ShardIdentifier, Session> sessions = new ConcurrentHashMap<>();
+
+    private SessionManager() {
+        new UnusedSessionWatcher().start();
+    }
 
     @Nullable
     public Session getSession(ShardIdentifier identifier) {
@@ -30,6 +35,16 @@ public class SessionManager {
 
     void onInvalidate(Session session) {
         sessions.remove(session.getIdentifier());
+    }
+
+    Map<ShardIdentifier, Session> getSessions() {
+        return sessions;
+    }
+
+    void killSession(ShardIdentifier shardIdentifier, Session session) {
+        //Reason?
+        session.getDiscordGateway().getSocket().disconnect(1000);
+        sessions.remove(shardIdentifier);
     }
 
 }
