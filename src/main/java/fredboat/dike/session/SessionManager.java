@@ -42,7 +42,6 @@ public class SessionManager {
     }
 
     void killSession(ShardIdentifier shardIdentifier, Session session) {
-        //Reason?
         session.getDiscordGateway().getSocket().disconnect(1000);
         sessions.remove(shardIdentifier);
     }
