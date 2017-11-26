@@ -17,9 +17,11 @@ import org.java_websocket.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -29,13 +31,17 @@ public class Session {
 
     private ShardIdentifier identifier;
     private LinkedBlockingQueue<String> outboundQueue = new LinkedBlockingQueue<>();
-    private DiscordGateway discordGateway;
+    private final DiscordGateway discordGateway;
     @SuppressWarnings("FieldCanBeLocal")
     private final DiscordQueuePoller poller;
     private LocalGateway localGateway;
     private WebSocket localSocket;
     private final Cache cache = new Cache();
     private AtomicLong clientSequence = new AtomicLong(0);
+    /**
+     * The time at the point we were disconnected from the bot, or epoch if this has yet to happen.
+     */
+    private Instant timeBotDisconnected = Instant.EPOCH;
 
     Session(ShardIdentifier identifier, LocalGateway localGateway, WebSocket localSocket, String op2) {
         this.identifier = identifier;
@@ -70,8 +76,22 @@ public class Session {
         return discordGateway;
     }
 
+    public boolean isBotConnected() {
+        return localSocket != null && localSocket.isOpen();
+    }
+
+    @Nullable
     public WebSocket getLocalSocket() {
         return localSocket;
+    }
+
+    public Instant getTimeBotDisconnected() {
+        return timeBotDisconnected;
+    }
+
+    public void onBotDisconnect() {
+        localSocket = null;
+        timeBotDisconnected = Instant.now();
     }
 
     public void changeLocalSocket(WebSocket localSocket) {
@@ -114,5 +134,16 @@ public class Session {
     @NonNull
     public Cache getCache() {
         return cache;
+    }
+
+    void destroy() {
+        discordGateway.setState(DiscordGateway.State.SHUTDOWN);
+        discordGateway.getSocket().sendClose(1000);
+
+        if (localSocket != null) {
+            localSocket.closeConnection(1000, "Dike session destroyed");
+        }
+
+        SessionManager.INSTANCE.getSessions().remove(this);
     }
 }
