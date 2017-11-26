@@ -2,7 +2,7 @@
 
 `[x]` Client identify with old session
 
-`[ ]` Kill unused sessions
+`[x]` Kill unused sessions
 
 `[ ]` OP 2 queue
 
