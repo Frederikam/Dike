@@ -67,7 +67,7 @@ public class DiscordGateway extends WebSocketAdapter {
     }
 
     private void queueConnect() {
-        getReconnectQueue().append(this);
+        IdentifyQueue.getIdentifyQueue(session.getIdentifier().getUser()).append(this);
     }
 
     void connectSocket() throws IOException, WebSocketException {
@@ -198,16 +198,6 @@ public class DiscordGateway extends WebSocketAdapter {
 
     public void forward(String message) {
         session.sendLocal(message);
-    }
-
-    private IdentifyQueue getReconnectQueue() {
-        long botId = session.getIdentifier().getUser();
-        Map<Long, IdentifyQueue> instanceMap = IdentifyQueue.getInstanceMap();
-        if (instanceMap.containsKey(botId)) {
-            return instanceMap.get(botId);
-        } else {
-            return new IdentifyQueue(botId);
-        }
     }
 
     public WebSocket getSocket() {
