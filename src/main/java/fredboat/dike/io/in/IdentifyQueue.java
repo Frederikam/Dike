@@ -1,7 +1,5 @@
 package fredboat.dike.io.in;
 
-import com.oracle.tools.packager.Log;
-import fredboat.dike.util.IdentifyRatelimitHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,8 +7,6 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import static fredboat.dike.io.in.DiscordGateway.State.WAITING_FOR_HELLO_TO_IDENTIFY;
 
 /**
  * Created by Repulser
@@ -41,7 +37,7 @@ class IdentifyQueue {
             while (!identifyQueue.isEmpty()) {
                 try {
                     DiscordGateway gateway = identifyQueue.poll();
-                    Log.info("Connecting gateway " + gateway.getSession().getIdentifier().getShardId());
+                    log.info("Connecting gateway " + gateway.getSession().getIdentifier().getShardId());
                     gateway.connectSocket();
                     if (!identifyQueue.isEmpty()) {
                         //TODO: Ensure shard has identified successfully before moving on to the next one
