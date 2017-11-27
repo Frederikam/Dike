@@ -10,7 +10,6 @@ import fredboat.dike.io.in.handle.*;
 import fredboat.dike.session.Session;
 import fredboat.dike.session.cache.Cache;
 import fredboat.dike.util.CloseCodes;
-import fredboat.dike.util.IdentifyRatelimitHandler;
 import fredboat.dike.util.JsonHandler;
 import fredboat.dike.util.OpCodes;
 import org.slf4j.Logger;
@@ -64,10 +63,14 @@ public class DiscordGateway extends WebSocketAdapter {
         handlers.add(OpCodes.OP_11_HEARTBEAT_ACK, new InForwardingHandler(this)); // We may want to implement this
         handlers.add(OpCodes.OP_12_GUILD_SYNC, new InNOPHandler(this));
 
-        connect();
+        queueConnect();
     }
 
-    private void connect() throws IOException, WebSocketException {
+    private void queueConnect() {
+        IdentifyQueue.getIdentifyQueue(session.getIdentifier().getUser()).append(this);
+    }
+
+    void connectSocket() throws IOException, WebSocketException {
         socket = new WebSocketFactory()
                 .createSocket(url)
                 .addListener(this)
@@ -101,7 +104,7 @@ public class DiscordGateway extends WebSocketAdapter {
     @Override
     public void onTextMessage(WebSocket websocket, String text) {
         try {
-            log.info(text);
+            log.debug(text);
 
             int op = jsonHandler.getOp(text);
 
@@ -182,12 +185,10 @@ public class DiscordGateway extends WebSocketAdapter {
             setState(WAITING_FOR_HELLO_TO_RESUME);
         } else {
             setState(IDENTIFY_RATELIMIT);
-            IdentifyRatelimitHandler.INSTANCE.acquire(session.getIdentifier().getUser());
-
-            setState(WAITING_FOR_HELLO_TO_IDENTIFY);
         }
 
-        connect();
+        queueConnect();
+
     }
 
     @Override
