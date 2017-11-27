@@ -67,7 +67,11 @@ public class DiscordGateway extends WebSocketAdapter {
         connect();
     }
 
-    private void connect() throws IOException, WebSocketException {
+    private void connect() {
+        getReconnectQueue().append(this);
+    }
+
+    void connectSocket() throws IOException, WebSocketException {
         socket = new WebSocketFactory()
                 .createSocket(url)
                 .addListener(this)
@@ -101,7 +105,7 @@ public class DiscordGateway extends WebSocketAdapter {
     @Override
     public void onTextMessage(WebSocket websocket, String text) {
         try {
-            log.info(text);
+            log.debug(text);
 
             int op = jsonHandler.getOp(text);
 
@@ -182,12 +186,10 @@ public class DiscordGateway extends WebSocketAdapter {
             setState(WAITING_FOR_HELLO_TO_RESUME);
         } else {
             setState(IDENTIFY_RATELIMIT);
-            IdentifyRatelimitHandler.INSTANCE.acquire(session.getIdentifier().getUser());
-
-            setState(WAITING_FOR_HELLO_TO_IDENTIFY);
         }
 
         connect();
+
     }
 
     @Override
@@ -197,6 +199,16 @@ public class DiscordGateway extends WebSocketAdapter {
 
     public void forward(String message) {
         session.sendLocal(message);
+    }
+
+    private ReconnectQueue getReconnectQueue() {
+        long botId = session.getIdentifier().getUser();
+        Map<Long, ReconnectQueue> instanceMap = ReconnectQueue.getInstanceMap();
+        if (instanceMap.containsKey(botId)) {
+            return instanceMap.get(botId);
+        } else {
+            return new ReconnectQueue(botId);
+        }
     }
 
     public WebSocket getSocket() {
