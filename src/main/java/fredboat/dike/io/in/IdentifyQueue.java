@@ -16,13 +16,13 @@ import static fredboat.dike.io.in.DiscordGateway.State.WAITING_FOR_HELLO_TO_IDEN
  * Created by Repulser
  * https://github.com/Repulser
  */
-class ReconnectQueue {
-    private static final Logger log = LoggerFactory.getLogger(ReconnectQueue.class);
-    private static final Map<Long, ReconnectQueue> instanceMap = new ConcurrentHashMap<>();
+class IdentifyQueue {
+    private static final Logger log = LoggerFactory.getLogger(IdentifyQueue.class);
+    private static final Map<Long, IdentifyQueue> instanceMap = new ConcurrentHashMap<>();
     private final BlockingQueue<DiscordGateway> reconnectQueue = new LinkedBlockingQueue<>();
     private volatile Thread reconnectThread;
 
-    ReconnectQueue(long botId) {
+    IdentifyQueue(long botId) {
         if (!instanceMap.containsKey(botId)) {
             instanceMap.put(botId, this);
         }
@@ -72,7 +72,7 @@ class ReconnectQueue {
 
     }
 
-    static Map<Long, ReconnectQueue> getInstanceMap() {
+    static Map<Long, IdentifyQueue> getInstanceMap() {
         return instanceMap;
     }
 }

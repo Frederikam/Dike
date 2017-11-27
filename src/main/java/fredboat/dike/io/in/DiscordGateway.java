@@ -10,7 +10,6 @@ import fredboat.dike.io.in.handle.*;
 import fredboat.dike.session.Session;
 import fredboat.dike.session.cache.Cache;
 import fredboat.dike.util.CloseCodes;
-import fredboat.dike.util.IdentifyRatelimitHandler;
 import fredboat.dike.util.JsonHandler;
 import fredboat.dike.util.OpCodes;
 import org.slf4j.Logger;
@@ -64,10 +63,10 @@ public class DiscordGateway extends WebSocketAdapter {
         handlers.add(OpCodes.OP_11_HEARTBEAT_ACK, new InForwardingHandler(this)); // We may want to implement this
         handlers.add(OpCodes.OP_12_GUILD_SYNC, new InNOPHandler(this));
 
-        connect();
+        queueConnect();
     }
 
-    private void connect() {
+    private void queueConnect() {
         getReconnectQueue().append(this);
     }
 
@@ -188,7 +187,7 @@ public class DiscordGateway extends WebSocketAdapter {
             setState(IDENTIFY_RATELIMIT);
         }
 
-        connect();
+        queueConnect();
 
     }
 
@@ -201,13 +200,13 @@ public class DiscordGateway extends WebSocketAdapter {
         session.sendLocal(message);
     }
 
-    private ReconnectQueue getReconnectQueue() {
+    private IdentifyQueue getReconnectQueue() {
         long botId = session.getIdentifier().getUser();
-        Map<Long, ReconnectQueue> instanceMap = ReconnectQueue.getInstanceMap();
+        Map<Long, IdentifyQueue> instanceMap = IdentifyQueue.getInstanceMap();
         if (instanceMap.containsKey(botId)) {
             return instanceMap.get(botId);
         } else {
-            return new ReconnectQueue(botId);
+            return new IdentifyQueue(botId);
         }
     }
 
