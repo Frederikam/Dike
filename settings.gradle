@@ -1,1 +1,4 @@
 rootProject.name = 'dike'
+include 'Tsunami'
+findProject(':Tsunami')?.name = 'tsunami'
+

@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'idea'
+}
+
+group 'com.fredboat'
+version '1.0'
+
+sourceCompatibility = 1.8
+mainClassName = 'fredboat.dike.tsunami.Tsunami'
+
+repositories {
+    mavenCentral()                     // main maven repo
+    jcenter()                          // JDA and some other stuff
+    mavenLocal()                       // useful for developing
+    maven { url "https://jitpack.io" } // build projects directly from github
+}
+
+dependencies {
+    compile group: 'com.github.natanbc', name: 'JDA', version: '878c223aad5ce2784613e44485808c2adaa8f565'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    compile group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '3.1.0'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
