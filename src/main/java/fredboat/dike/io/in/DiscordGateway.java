@@ -207,13 +207,24 @@ public class DiscordGateway extends WebSocketAdapter {
 
         if (shouldResume) {
             setState(WAITING_FOR_HELLO_TO_RESUME);
+            connect();
         } else {
             setState(IDENTIFY_RATELIMIT);
-            identifyLatch = IdentifyRatelimitHandler.getInstance(session.getIdentifier().getUser()).acquire(this);
-            setState(WAITING_FOR_HELLO_TO_IDENTIFY);
+            new Thread(() -> {
+                MDC.put("shard", session.getIdentifier().toStringShort());
+                try {
+                    identifyLatch = IdentifyRatelimitHandler.getInstance(session.getIdentifier().getUser()).acquire(this);
+                } catch (InterruptedException e) {
+                    log.error("Got interrupted while reconnecting shard");
+                }
+                setState(WAITING_FOR_HELLO_TO_IDENTIFY);
+            }).start();
         }
+    }
 
-        connect();
+    @Override
+    public void handleCallbackError(WebSocket websocket, Throwable cause) throws Exception {
+        log.error("Error in websocket", cause);
     }
 
     @Override
