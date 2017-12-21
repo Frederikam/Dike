@@ -55,11 +55,6 @@ public class OutIdentifyHandler extends OutgoingHandler {
         Session session = SessionManager.INSTANCE.getSession(identifier);
 
         if (session == null) {
-            try {
-                IdentifyRatelimitHandler.INSTANCE.acquire(identifier.getUser());
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
             session = SessionManager.INSTANCE.createSession(identifier, localGateway, socket, json.toString());
         } else if (session.getLocalSocket().isOpen()) {
             // A session already exists, but it is already occupied by another client!

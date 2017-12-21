@@ -31,7 +31,7 @@ public class InHelloHandler extends IncomingHandler {
     }
 
     @Override
-    public void handle(String message) throws IOException {
+    public void handle(String message) {
         switch (discordGateway.getState()) {
             case WAITING_FOR_HELLO_TO_IDENTIFY:
                 synchronized (cache) {

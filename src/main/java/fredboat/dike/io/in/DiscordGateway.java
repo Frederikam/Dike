@@ -16,6 +16,7 @@ import fredboat.dike.util.OpCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -23,6 +24,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.zip.DataFormatException;
 import java.util.zip.InflaterOutputStream;
 
@@ -44,6 +46,11 @@ public class DiscordGateway extends WebSocketAdapter {
     private volatile State state = WAITING_FOR_HELLO_TO_IDENTIFY;
     private int failedConnectAttempts = 0;
     private final Cache cache;
+    /**
+     * See {@link IdentifyRatelimitHandler}
+     */
+    @Nullable
+    private CountDownLatch identifyLatch = null;
 
     public DiscordGateway(Session session, URI url, String op2) throws IOException, WebSocketException {
         this.session = session;
@@ -64,7 +71,24 @@ public class DiscordGateway extends WebSocketAdapter {
         handlers.add(OpCodes.OP_11_HEARTBEAT_ACK, new InForwardingHandler(this)); // We may want to implement this
         handlers.add(OpCodes.OP_12_GUILD_SYNC, new InNOPHandler(this));
 
-        connect();
+        /* Wait for identify greenlight and connect */
+        new Thread(() -> {
+            try {
+                setState(IDENTIFY_RATELIMIT);
+                socket = new WebSocketFactory()
+                        .createSocket(url)
+                        .addListener(this)
+                        .addHeader("Accept-Encoding", "gzip");
+
+                identifyLatch = IdentifyRatelimitHandler.getInstance(session.getIdentifier().getUser()).acquire(this);
+                setState(WAITING_FOR_HELLO_TO_IDENTIFY);
+
+                socket.connect();
+            } catch (IOException | InterruptedException | WebSocketException e) {
+                log.error("Exception while connecting to Discord", e);
+                setState(SHUTDOWN);
+            }
+        }, "connect-thread-"+session.getIdentifier().getUser()).start();
     }
 
     private void connect() throws IOException, WebSocketException {
@@ -182,8 +206,7 @@ public class DiscordGateway extends WebSocketAdapter {
             setState(WAITING_FOR_HELLO_TO_RESUME);
         } else {
             setState(IDENTIFY_RATELIMIT);
-            IdentifyRatelimitHandler.INSTANCE.acquire(session.getIdentifier().getUser());
-
+            identifyLatch = IdentifyRatelimitHandler.getInstance(session.getIdentifier().getUser()).acquire(this);
             setState(WAITING_FOR_HELLO_TO_IDENTIFY);
         }
 
@@ -218,6 +241,9 @@ public class DiscordGateway extends WebSocketAdapter {
     public void setState(State state) {
         log.info(this.state + " -> " + state);
 
+        if ((state == SHUTDOWN || state == IDENTIFYING) && identifyLatch != null)
+            identifyLatch.countDown();
+
         if (this.state == SHUTDOWN && state != SHUTDOWN) {
             throw new IllegalStateException("Can't change state if we are shutdown!");
         }
@@ -230,6 +256,10 @@ public class DiscordGateway extends WebSocketAdapter {
     }
 
     public enum State {
+        /**
+         * We are waiting for the green light to identify. This state is entered when reconnecting or initially connecting.
+         */
+        IDENTIFY_RATELIMIT,
         /**
          * We just started (or reconnected) and are waiting for OP 10 so we can identify
          */
@@ -250,10 +280,6 @@ public class DiscordGateway extends WebSocketAdapter {
          * We just sent OP 6 and should be replaying events again
          */
         RESUMING,
-        /**
-         * We lost connection and are waiting to reconnect and re-identify
-         */
-        IDENTIFY_RATELIMIT,
         /**
          * Something failed irrecoverably. Most likely cause is that our token got reset
          */
