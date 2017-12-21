@@ -10,11 +10,12 @@ import fredboat.dike.io.in.handle.*;
 import fredboat.dike.session.Session;
 import fredboat.dike.session.cache.Cache;
 import fredboat.dike.util.CloseCodes;
-import fredboat.dike.util.IdentifyRatelimitHandler;
+import fredboat.dike.session.IdentifyRatelimitHandler;
 import fredboat.dike.util.JsonHandler;
 import fredboat.dike.util.OpCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
@@ -43,7 +44,7 @@ public class DiscordGateway extends WebSocketAdapter {
      * If true we should not send any messages asides from OP 2 and OP 6
      */
     private volatile boolean locked = true;
-    private volatile State state = WAITING_FOR_HELLO_TO_IDENTIFY;
+    private volatile State state = INITIALIZING;
     private int failedConnectAttempts = 0;
     private final Cache cache;
     /**
@@ -166,6 +167,8 @@ public class DiscordGateway extends WebSocketAdapter {
 
         log.info(str);
 
+        if (identifyLatch != null) identifyLatch.countDown(); // Prevent unnecessary waiting
+
         if (state == SHUTDOWN) return;
 
         boolean shouldResume = true;
@@ -218,6 +221,11 @@ public class DiscordGateway extends WebSocketAdapter {
         log.error("Error in websocket", cause);
     }
 
+    @Override
+    public void onThreadStarted(WebSocket websocket, ThreadType threadType, Thread thread) throws Exception {
+        MDC.put("shard", session.getIdentifier().toStringShort());
+    }
+
     public void forward(String message) {
         session.sendLocal(message);
     }
@@ -256,6 +264,10 @@ public class DiscordGateway extends WebSocketAdapter {
     }
 
     public enum State {
+        /**
+         * Initial state
+         */
+        INITIALIZING,
         /**
          * We are waiting for the green light to identify. This state is entered when reconnecting or initially connecting.
          */

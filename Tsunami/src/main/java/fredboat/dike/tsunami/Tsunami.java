@@ -12,7 +12,7 @@ public class Tsunami {
 
     private static final Logger log = LoggerFactory.getLogger(Tsunami.class);
 
-    public static void main(String[] args) throws LoginException, RateLimitedException {
+    public static void main(String[] args) throws LoginException, RateLimitedException, InterruptedException {
         Config config = new Config();
 
         log.info("Starting Tsunami with " + config.getShardCount() + " shards");

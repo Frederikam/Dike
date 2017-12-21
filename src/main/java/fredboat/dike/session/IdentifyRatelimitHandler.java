@@ -1,4 +1,4 @@
-package fredboat.dike.util;
+package fredboat.dike.session;
 
 import fredboat.dike.io.in.DiscordGateway;
 import org.slf4j.Logger;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class IdentifyRatelimitHandler {
 
     private static final Logger log = LoggerFactory.getLogger(IdentifyRatelimitHandler.class);
-    private static final Duration BACKOFF = Duration.ofMillis(5050);
+    private static final Duration BACKOFF = Duration.ofMillis(5500);
 
     private static final ConcurrentHashMap<Long, IdentifyRatelimitHandler> INSTANCES = new ConcurrentHashMap<>();
     private final LinkedBlockingQueue<WaitingShard> queue = new LinkedBlockingQueue<>();
@@ -34,8 +34,13 @@ public class IdentifyRatelimitHandler {
             throw new RuntimeException("Attempted to queue IDENTIFY, but the queue didn't change.");
         }
 
+        long start = System.currentTimeMillis();
+
         // This latch is finished when we are ready to IDENTIFY
         wshard.greenlightLatch.await();
+        log.info("Gave the greenlight to {} after {}ms",
+                shard.getSession().getIdentifier().toStringShort(),
+                System.currentTimeMillis() - start);
 
         return wshard.identifiedLatch;
     }
@@ -67,7 +72,8 @@ public class IdentifyRatelimitHandler {
             boolean reached = shard.identifiedLatch.await(BACKOFF.toMillis(), TimeUnit.MILLISECONDS);
 
             if (!reached) {
-                log.warn("Timed out while waiting for {} to begin identifying. It likely failed. Moving on...", shard.shard);
+                log.warn("Timed out while waiting for {} to begin identifying. It likely failed. Moving on...", shard.shard.getSession().getIdentifier().toStringShort());
+                log.info(shard.identifiedLatch.toString());
             }
 
             sleep(BACKOFF.toMillis()); // Wait for the ratelimit duration

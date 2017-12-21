@@ -16,7 +16,7 @@ public class InForwardingHandler extends IncomingHandler {
     }
 
     @Override
-    public void handle(String message) throws IOException {
+    public void handle(String message) {
         discordGateway.forward(message);
     }
 }

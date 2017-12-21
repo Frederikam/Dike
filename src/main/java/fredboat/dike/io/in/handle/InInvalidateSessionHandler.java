@@ -23,7 +23,7 @@ public class InInvalidateSessionHandler extends IncomingHandler {
     }
 
     @Override
-    public void handle(String message) throws IOException {
+    public void handle(String message) {
         willIdentify = !new JSONObject(message).getBoolean("d");
         log.info("Received OP 9. May resume: " + !willIdentify);
 
