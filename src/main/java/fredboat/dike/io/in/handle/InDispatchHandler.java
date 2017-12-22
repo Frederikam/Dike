@@ -46,7 +46,7 @@ public class InDispatchHandler extends IncomingHandler {
         }
 
         EntityType entityType = null;
-        assert type != null;
+        if (type == null) throw new RuntimeException("Received invalid OP 0 with no type field!");
         switch (type) {
             case "CHANNEL_CREATE":
             case "CHANNEL_UPDATE":
@@ -81,14 +81,14 @@ public class InDispatchHandler extends IncomingHandler {
                 Any dCreate = JsonIterator.deserialize(message).get("d");
                 Guild guild1 = cache.getGuild(dCreate.get("guild_id").toLong());
 
-                assert guild1 != null : "Received " + type + " for unknown guild!";
+                if (guild1 == null) throw new RuntimeException("Received " + type + " for unknown guild!");
                 guild1.createEntity(entityType, dCreate);
                 break;
             default:
                 Any dDelete = JsonIterator.deserialize(message).get("d");
                 Guild guild2 = cache.getGuild(dDelete.get("guild_id").toLong());
 
-                assert guild2 != null : "Received " + type + " for unknown guild!";
+                if (guild2 == null) throw new RuntimeException("Received " + type + " for unknown guild!");
                 guild2.deleteEntity(entityType, dDelete);
                 break;
         }
@@ -111,7 +111,7 @@ public class InDispatchHandler extends IncomingHandler {
                     Any dUpdate = JsonIterator.deserialize(message).get("d");
                     Guild guildUpdate = cache.getGuild(dUpdate.get("guild_id").toLong());
 
-                    assert guildUpdate != null : "Received " + type + " for unknown guild!";
+                    if (guildUpdate == null) throw new RuntimeException("Received " + type + " for unknown guild!");
                     guildUpdate.update(dUpdate);
                     break;
                 case "GUILD_DELETE":
@@ -121,7 +121,7 @@ public class InDispatchHandler extends IncomingHandler {
                     Any dChunk = JsonIterator.deserialize(message).get("d");
                     Guild guildChunking = cache.getGuild(dChunk.get("guild_id").toLong());
 
-                    assert guildChunking != null : "Received " + type + " for unknown guild!";
+                    if (guildChunking == null) throw new RuntimeException("Received " + type + " for unknown guild!");
                     for (Any any : dChunk.get("members").asList()) {
                         guildChunking.createEntity(EntityType.MEMBER, any);
                     }
@@ -130,14 +130,14 @@ public class InDispatchHandler extends IncomingHandler {
                     Any dVoice = JsonIterator.deserialize(message).get("d");
                     Guild stateGuild = cache.getGuild(dVoice.get("guild_id").toLong());
 
-                    assert stateGuild != null : "Received VOICE_STATE_UPDATE for unknown guild!";
+                    if (stateGuild == null) throw new RuntimeException("Received " + type + " for unknown guild!");
                     stateGuild.setVoiceStates(dVoice);
                     break;
                 case "PRESENCE_UPDATE":
                     Any dPres = JsonIterator.deserialize(message).get("d");
                     Guild guildPres = cache.getGuild(dPres.get("guild_id").toLong());
 
-                    assert guildPres != null : "Received PRESENCE_UPDATE for unknown guild!";
+                    if (guildPres == null) throw new RuntimeException("Received " + type + " for unknown guild!");
                     guildPres.setPresence(dPres);
                     break;
                 case "TYPING_START":
