@@ -40,6 +40,7 @@ public class DiscordGateway extends WebSocketAdapter {
     private final Session session;
     private final URI url;
     private WebSocket socket;
+    private final Heartbeater heartbeater = new Heartbeater(this);
     /**
      * If true we should not send any messages asides from OP 2 and OP 6
      */
@@ -59,7 +60,7 @@ public class DiscordGateway extends WebSocketAdapter {
         this.cache = session.getCache();
 
         handlers.add(OpCodes.OP_0_DISPATCH, new InDispatchHandler(this));
-        handlers.add(OpCodes.OP_1_HEARTBEAT, new InNOPHandler(this)); // We may want to implement this
+        handlers.add(OpCodes.OP_1_HEARTBEAT, new InHeartbeatHandler(this));
         handlers.add(OpCodes.OP_2_IDENTIFY, new InNOPHandler(this));
         handlers.add(OpCodes.OP_3_PRESENCE, new InNOPHandler(this));
         handlers.add(OpCodes.OP_4_VOICE_STATE, new InNOPHandler(this));
@@ -166,6 +167,7 @@ public class DiscordGateway extends WebSocketAdapter {
         }
 
         log.info(str);
+        heartbeater.setEnabled(false);
 
         if (identifyLatch != null) identifyLatch.countDown(); // Prevent unnecessary waiting
 
@@ -277,6 +279,10 @@ public class DiscordGateway extends WebSocketAdapter {
 
     public IncomingHandler getHandler(int op) {
         return handlers.get(op);
+    }
+
+    public Heartbeater getHeartbeater() {
+        return heartbeater;
     }
 
     public enum State {

@@ -24,6 +24,7 @@ public class Tsunami {
                     .useSharding(i, config.getShardCount())
                     .addEventListener(new VerboseEventListener())
                     .buildAsync();
+            Thread.sleep(100);
         }
     }
 

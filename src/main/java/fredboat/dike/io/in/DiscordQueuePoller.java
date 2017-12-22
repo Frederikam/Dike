@@ -8,6 +8,7 @@ package fredboat.dike.io.in;
 import fredboat.dike.session.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -27,6 +28,7 @@ public class DiscordQueuePoller extends Thread {
     @Override
     public void run() {
         DiscordGateway gateway = session.getDiscordGateway();
+        MDC.put("shard", session.getIdentifier().toStringShort());
 
         try {
             //noinspection InfiniteLoopStatement
@@ -41,6 +43,7 @@ public class DiscordQueuePoller extends Thread {
                     }
                 }
 
+                log.info("Sent: " + string);
                 gateway.getSocket().sendText(string);
             }
         } catch (Exception e) {

@@ -9,47 +9,64 @@ import fredboat.dike.util.OpCodes;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Heartbeater extends Thread {
 
     private static final Logger log = LoggerFactory.getLogger(Heartbeater.class);
     private final DiscordGateway gateway;
-    private final int interval;
-    private int sequence = 0;
+    private int interval;
+    private final AtomicInteger sequence = new AtomicInteger();
+    private volatile boolean enabled = false;
 
-    //TODO: Kill this thread after session dies
-    public Heartbeater(DiscordGateway gateway, int interval) {
+    Heartbeater(DiscordGateway gateway) {
         this.gateway = gateway;
-        this.interval = interval;
-
-        setName("Heartbeater " + gateway.getSession().getIdentifier().toStringShort());
+        this.interval = 41250; // Discord may send a different value
     }
 
     @Override
     public void run() {
+        setName("Heartbeater " + gateway.getSession().getIdentifier().toStringShort());
+        MDC.put("shard", gateway.getSession().getIdentifier().toStringShort());
         //noinspection InfiniteLoopStatement
         while (true) {
             try {
-                // Make sure we're not locked
-                while (gateway.isLocked()) {
-                    // Gateway is locked. We will need to wait before we are allowed to send heartbeats
-                    Thread.sleep(1000);
-                }
+                if (!enabled) this.wait();
 
-                // Do we need to shutdown the heartbeat?
-                if (gateway.getState() == DiscordGateway.State.SHUTDOWN) return;
-
-                JSONObject json = new JSONObject();
-                json.put("op", OpCodes.OP_1_HEARTBEAT);
-                json.put("d", sequence);
-                sequence++;
-
-                gateway.getSession().sendDiscord(json.toString());
+                beat();
 
                 Thread.sleep(interval);
             } catch (InterruptedException e) {
-                log.error("Heartbeat thread got interrupted!", e);
+                log.error("Heartbeat thread got interrupted. NOT GOOD!", e);
+                return;
             }
         }
+    }
+
+    public void beat() {
+        JSONObject json = new JSONObject();
+        json.put("op", OpCodes.OP_1_HEARTBEAT);
+        json.put("d", sequence.get());
+        sequence.getAndIncrement();
+
+        gateway.getSession().sendDiscord(json.toString());
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+
+        if (enabled) {
+            synchronized (this) {
+                notify();
+            }
+        }
+
+        if (enabled && getState() == State.NEW) this.start();
+    }
+
+    public void setInterval(int interval) {
+        this.interval = interval;
     }
 }

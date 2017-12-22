@@ -13,15 +13,11 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
 public class InHelloHandler extends IncomingHandler {
 
     private static final Logger log = LoggerFactory.getLogger(InHelloHandler.class);
 
     private final String op2;
-    @SuppressWarnings("FieldCanBeLocal")
-    private Heartbeater heartbeater = null;
     private final Cache cache;
 
     public InHelloHandler(DiscordGateway discordGateway, String op2) {
@@ -32,6 +28,12 @@ public class InHelloHandler extends IncomingHandler {
 
     @Override
     public void handle(String message) {
+        // Start heartbeating
+        int interval = new JSONObject(message).getJSONObject("d").getInt("heartbeat_interval");
+        Heartbeater heartbeater = discordGateway.getHeartbeater();
+        heartbeater.setInterval(interval);
+        heartbeater.setEnabled(true);
+
         switch (discordGateway.getState()) {
             case WAITING_FOR_HELLO_TO_IDENTIFY:
                 synchronized (cache) {
@@ -39,13 +41,6 @@ public class InHelloHandler extends IncomingHandler {
                 }
                 discordGateway.getSocket().sendText(op2);
                 discordGateway.setState(DiscordGateway.State.IDENTIFYING);
-
-                if (heartbeater != null) break;
-
-                // Start heartbeating
-                int interval = new JSONObject(message).getJSONObject("d").getInt("heartbeat_interval");
-                heartbeater = new Heartbeater(discordGateway, interval);
-                heartbeater.start();
                 break;
             case WAITING_FOR_HELLO_TO_RESUME:
                 discordGateway.setState(DiscordGateway.State.RESUMING);
