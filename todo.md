@@ -4,8 +4,10 @@
 
 `[ ]` Kill unused sessions
 
-`[ ]` OP 2 queue
+`[x]` OP 2 queue
 
 `[x]` Port configuration
 
 `[ ]` Authentication
+
+`[ ]` WS Ratelimit
