@@ -9,9 +9,12 @@ import com.kaaz.configuration.ConfigurationOption;
 public class Config {
 
     @ConfigurationOption
-    public static int dike_port = 9999;
+    public static int port = 9999;
 
     @ConfigurationOption
-    public static String dike_host = "0.0.0.0";
+    public static String host = "0.0.0.0";
+
+    @ConfigurationOption
+    public static int unusedTimeoutMinutes = 60;
 
 }

@@ -30,7 +30,7 @@ public class LocalGateway extends WebSocketServer {
     private ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
 
     public LocalGateway() {
-        super(new InetSocketAddress(Config.dike_host, Config.dike_port));
+        super(new InetSocketAddress(Config.host, Config.port));
 
         jsonHandler = new JsonHandler();
 
@@ -64,6 +64,11 @@ public class LocalGateway extends WebSocketServer {
             log.info("Closed connection from " + conn.getRemoteSocketAddress()
                     + " :: remote = " + remote);
         }
+
+        Session session = getSession(conn);
+        if (session != null)
+            session.onBotDisconnect();
+
         sessions.remove(conn.getResourceDescriptor());
     }
 

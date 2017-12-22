@@ -8,7 +8,9 @@ package fredboat.dike.session;
 import fredboat.dike.io.out.LocalGateway;
 import org.java_websocket.WebSocket;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionManager {
@@ -16,6 +18,10 @@ public class SessionManager {
     public static final SessionManager INSTANCE = new SessionManager();
 
     private ConcurrentHashMap<ShardIdentifier, Session> sessions = new ConcurrentHashMap<>();
+
+    private SessionManager() {
+        new UnusedSessionWatcher().start();
+    }
 
     @Nullable
     public Session getSession(ShardIdentifier identifier) {
@@ -28,8 +34,9 @@ public class SessionManager {
         return session;
     }
 
-    void onInvalidate(Session session) {
-        sessions.remove(session.getIdentifier());
+    @Nonnull
+    Map<ShardIdentifier, Session> getSessions() {
+        return sessions;
     }
 
 }
