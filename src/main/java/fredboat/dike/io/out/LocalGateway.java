@@ -68,6 +68,11 @@ public class LocalGateway extends WebSocketServer {
             log.info("Closed connection from " + conn.getRemoteSocketAddress()
                     + " :: remote = " + remote);
         }
+
+        if (getSession(conn) != null) {
+            getSession(conn).onLocalSocketDisconnect();
+        }
+
         sessions.remove(conn.getResourceDescriptor());
     }
 

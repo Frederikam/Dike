@@ -9,6 +9,7 @@ import com.neovisionaries.ws.client.*;
 import fredboat.dike.io.in.handle.*;
 import fredboat.dike.session.IdentifyRatelimitHandler;
 import fredboat.dike.session.Session;
+import fredboat.dike.session.SessionManager;
 import fredboat.dike.session.cache.Cache;
 import fredboat.dike.util.CloseCodes;
 import fredboat.dike.util.JsonHandler;
@@ -88,7 +89,7 @@ public class DiscordGateway extends WebSocketAdapter {
                 socket.connect();
             } catch (IOException | InterruptedException | WebSocketException e) {
                 log.error("Exception while connecting to Discord", e);
-                setState(SHUTDOWN);
+                SessionManager.INSTANCE.invalidate(session);
             }
         }, "connect-thread-"+session.getIdentifier().getUser()).start();
     }
@@ -180,7 +181,7 @@ public class DiscordGateway extends WebSocketAdapter {
             if (serverCloseFrame.getCloseCode() == CloseCodes.AUTHENTICATION_FAILED.getCode()
                     || serverCloseFrame.getCloseCode() == CloseCodes.SHARDING_REQUIRED.getCode()) {
                 log.error("Fatal remote close code " + serverCloseFrame.getCloseCode() + "!");
-                setState(SHUTDOWN);
+                SessionManager.INSTANCE.invalidate(session);
                 return;
             }
 
@@ -283,6 +284,15 @@ public class DiscordGateway extends WebSocketAdapter {
 
     public Heartbeater getHeartbeater() {
         return heartbeater;
+    }
+
+    /**
+     * Invoked by {@link Session} only
+     */
+    public void onShutdown() {
+        socket.sendClose();
+        setState(SHUTDOWN);
+        heartbeater.shutdown();
     }
 
     public enum State {

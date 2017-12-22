@@ -1,0 +1,11 @@
+dike:
+  host: 0.0.0.0
+  port: 9999
+  whitelist: [] # list of bot IDs to be whitelisted
+
+  # Seconds before we disconnect an old shard with no bot client attached
+  timeoutIdle: 600
+
+  # Like timeoutIdle, but specifically affects shards with lower max shard counts
+  # You may want to reduce this if memory is very tight
+  timeoutIdleFormerGen: 200

@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -27,7 +28,7 @@ public class Session {
 
     private static final Logger log = LoggerFactory.getLogger(Session.class);
 
-    private ShardIdentifier identifier;
+    private final ShardIdentifier identifier;
     private LinkedBlockingQueue<String> outboundQueue = new LinkedBlockingQueue<>();
     private DiscordGateway discordGateway;
     @SuppressWarnings("FieldCanBeLocal")
@@ -36,6 +37,7 @@ public class Session {
     private WebSocket localSocket;
     private final Cache cache = new Cache();
     private AtomicLong clientSequence = new AtomicLong(0);
+    private Instant lastTimeLocalDisconnected = Instant.EPOCH;
 
     Session(ShardIdentifier identifier, LocalGateway localGateway, WebSocket localSocket, String op2) {
         this.identifier = identifier;
@@ -62,6 +64,7 @@ public class Session {
         localSocket.send(message);
     }
 
+    @NonNull
     public ShardIdentifier getIdentifier() {
         return identifier;
     }
@@ -78,12 +81,30 @@ public class Session {
         return localSocket;
     }
 
+    public void onLocalSocketDisconnect() {
+        lastTimeLocalDisconnected = Instant.now();
+    }
+
+    public Instant getLastTimeLocalDisconnected() {
+        return lastTimeLocalDisconnected;
+    }
+
+    /**
+     * Invoked on the {@link SessionManager}
+     */
+    void onShutdown() {
+        if (localSocket != null)
+            localSocket.close(); // Maybe send OP 9 instead?
+
+        discordGateway.onShutdown();
+    }
+
     public void changeLocalSocket(WebSocket localSocket) {
         assert !this.localSocket.isOpen() : "Cannot change local socket if one already is open!";
         clientSequence.set(0);
 
         if (discordGateway.getState() != DiscordGateway.State.CONNECTED) {
-            log.warn("To change socket the connection must be {} but it is {}! Waiting for CONNECTED status...");
+            log.warn("To change socket the connection must be CONNECTED but it is {}! Waiting for CONNECTED status...", discordGateway.getState());
 
             while (discordGateway.getState() != DiscordGateway.State.CONNECTED) {
                 try {

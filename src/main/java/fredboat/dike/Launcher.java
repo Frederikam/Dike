@@ -23,6 +23,7 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class Launcher {
     private static final Logger log = LoggerFactory.getLogger(Launcher.class);
+    private static Config config;
 
     public static void main(String[] args) {
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> log.error("Uncaught exception in thread {}", t, e));
@@ -36,9 +37,14 @@ public class Launcher {
         gateway.start();
     }
 
+    public static Config getConfig() {
+        return config;
+    }
+
     @Bean
     static Config config(ConfigurationProvider configurationProvider) {
-        return configurationProvider.bind("dike", Config.class);
+        config = configurationProvider.bind("dike", Config.class);
+        return config;
     }
 
     @Bean

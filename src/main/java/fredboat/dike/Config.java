@@ -7,5 +7,7 @@ public interface Config {
     String host();
     int port();
     List<String> whitelist();
+    int timeoutIdle();
+    int timeoutIdleFormerGen();
 
 }

@@ -20,6 +20,7 @@ public class Heartbeater extends Thread {
     private int interval;
     private final AtomicInteger sequence = new AtomicInteger();
     private volatile boolean enabled = false;
+    private volatile boolean shutdown = false;
 
     Heartbeater(DiscordGateway gateway) {
         this.gateway = gateway;
@@ -39,7 +40,8 @@ public class Heartbeater extends Thread {
 
                 Thread.sleep(interval);
             } catch (InterruptedException e) {
-                log.error("Heartbeat thread got interrupted. NOT GOOD!", e);
+                if (!shutdown) // This will intentionally happen when shutting down
+                    log.error("Heartbeat thread got interrupted. NOT GOOD!", e);
                 return;
             }
         }
@@ -52,6 +54,11 @@ public class Heartbeater extends Thread {
         sequence.getAndIncrement();
 
         gateway.getSession().sendDiscord(json.toString());
+    }
+
+    void shutdown() {
+        shutdown = true;
+        interrupt();
     }
 
     public void setEnabled(boolean enabled) {
