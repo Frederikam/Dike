@@ -8,7 +8,7 @@
 
 `[x]` Port configuration
 
-`[ ]` Authentication
+`[x]` Whitelisting
 
 `[ ]` WS Ratelimit
 

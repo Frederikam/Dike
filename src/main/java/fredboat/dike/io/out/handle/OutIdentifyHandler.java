@@ -6,9 +6,12 @@
 package fredboat.dike.io.out.handle;
 
 import fredboat.dike.io.out.LocalGateway;
+import fredboat.dike.io.rest.RestRequester;
+import fredboat.dike.io.rest.Route;
 import fredboat.dike.session.Session;
 import fredboat.dike.session.SessionManager;
 import fredboat.dike.session.ShardIdentifier;
+import okhttp3.Response;
 import org.java_websocket.WebSocket;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -16,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
 
 public class OutIdentifyHandler extends OutgoingHandler {
 
@@ -56,6 +61,15 @@ public class OutIdentifyHandler extends OutgoingHandler {
 
         Session session = SessionManager.INSTANCE.getSession(identifier);
 
+        try {
+            if (!handleWhitelist(d.getString("token"))) {
+                socket.close(4000, "This bot is not whitelisted by Dike!");
+                return;
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         if (session == null) {
             session = SessionManager.INSTANCE.createSession(identifier, localGateway, socket, json.toString());
         } else if (session.getLocalSocket().isOpen()) {
@@ -72,6 +86,26 @@ public class OutIdentifyHandler extends OutgoingHandler {
 
         localGateway.setSession(socket, session);
         session.getCache().setLargeThreshold(d.getInt("large_threshold"));
+    }
+
+    private boolean handleWhitelist(String token) throws IOException, InterruptedException {
+        // No whitelist means we should accept everyone
+        List<String> whitelist = localGateway.getConfig().whitelist();
+        if (whitelist.isEmpty()
+                || (whitelist.size() == 1 && whitelist.get(0).equals(""))) return true;
+
+        Response res = RestRequester.instance(token).requestSync(Route.USER_AT_ME);
+
+        String userId = new JSONObject(Objects.requireNonNull(res.body()).string())
+                .getString("id");
+
+        boolean whitelisted = localGateway.getConfig().whitelist().contains(userId);
+
+        if(!whitelisted) {
+            log.error("User {} is not on the whitelist!", userId);
+        }
+
+        return whitelisted;
     }
 
 }

@@ -7,10 +7,10 @@ package fredboat.dike.io.in;
 
 import com.neovisionaries.ws.client.*;
 import fredboat.dike.io.in.handle.*;
+import fredboat.dike.session.IdentifyRatelimitHandler;
 import fredboat.dike.session.Session;
 import fredboat.dike.session.cache.Cache;
 import fredboat.dike.util.CloseCodes;
-import fredboat.dike.session.IdentifyRatelimitHandler;
 import fredboat.dike.util.JsonHandler;
 import fredboat.dike.util.OpCodes;
 import org.slf4j.Logger;

@@ -25,6 +25,7 @@ public class Launcher {
     private static final Logger log = LoggerFactory.getLogger(Launcher.class);
 
     public static void main(String[] args) {
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> log.error("Uncaught exception in thread {}", t, e));
         SpringApplication sa = new SpringApplication(Launcher.class);
         sa.setWebEnvironment(false);
         sa.run(args);

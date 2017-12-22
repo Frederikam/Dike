@@ -30,9 +30,11 @@ public class LocalGateway extends WebSocketServer {
     private final ArrayList<OutgoingHandler> handlers = new ArrayList<>();
     private final JsonHandler jsonHandler;
     private ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
+    private final Config config;
 
     public LocalGateway(Config config) {
         super(new InetSocketAddress(config.host(), config.port()));
+        this.config = config;
 
         jsonHandler = new JsonHandler();
 
@@ -110,5 +112,9 @@ public class LocalGateway extends WebSocketServer {
 
     public void setSession(WebSocket conn, Session session) {
         sessions.put(conn.getResourceDescriptor(), session);
+    }
+
+    public Config getConfig() {
+        return config;
     }
 }

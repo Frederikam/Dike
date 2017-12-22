@@ -8,9 +8,9 @@ import java.util.function.Function;
 @ThreadSafe
 public class Ratelimit {
 
-    private Instant resetTime = Instant.EPOCH;
-    private int remaining = 0;
-    private int limit;
+    private volatile Instant resetTime;
+    private volatile int remaining = 0;
+    private volatile int limit;
 
     private final Function<Ratelimit, Instant> resetCallback;
     private final Consumer<Ratelimit> ratelimitedCallback;
@@ -22,6 +22,7 @@ public class Ratelimit {
      */
     public Ratelimit(int limit, Function<Ratelimit, Instant> resetCallback, Consumer<Ratelimit> ratelimitedCallback) {
         this.limit = limit;
+        this.remaining = limit;
         this.resetCallback = resetCallback;
         this.ratelimitedCallback = ratelimitedCallback;
 
@@ -39,7 +40,12 @@ public class Ratelimit {
 
         if (remaining <= 0) {
             ratelimitedCallback.accept(this);
-            Thread.sleep(resetTime.minusMillis(System.currentTimeMillis()).toEpochMilli());
+            synchronized (this) {
+                long toWait = resetTime.minusMillis(Instant.now().toEpochMilli()).toEpochMilli();
+                toWait = Math.max(toWait, 0);
+                wait(toWait);
+                acquire(); // Try again
+            }
         } else {
             remaining--; // Good to go!
         }
@@ -72,5 +78,9 @@ public class Ratelimit {
 
     public void setLimit(int limit) {
         this.limit = limit;
+    }
+
+    public void setRemaining(int remaining) {
+        this.remaining = remaining;
     }
 }
