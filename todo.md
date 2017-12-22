@@ -11,3 +11,7 @@
 `[ ]` Authentication
 
 `[ ]` WS Ratelimit
+
+`[ ]` Reconnect op handling
+
+`[ ]` Bot<->Dike heartbeat handling
