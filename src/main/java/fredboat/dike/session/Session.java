@@ -70,6 +70,10 @@ public class Session {
         return discordGateway;
     }
 
+    public LocalGateway getLocalGateway() {
+        return localGateway;
+    }
+
     public WebSocket getLocalSocket() {
         return localSocket;
     }

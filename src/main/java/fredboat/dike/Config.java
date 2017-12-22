@@ -1,17 +1,8 @@
 package fredboat.dike;
 
-import com.kaaz.configuration.ConfigurationOption;
+public interface Config {
 
-/**
- * Created by Repulser
- * https://github.com/Repulser
- */
-public class Config {
-
-    @ConfigurationOption
-    public static int dike_port = 9999;
-
-    @ConfigurationOption
-    public static String dike_host = "0.0.0.0";
+    String host();
+    int port();
 
 }

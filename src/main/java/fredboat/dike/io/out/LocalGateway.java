@@ -5,9 +5,9 @@
 
 package fredboat.dike.io.out;
 
+import fredboat.dike.Config;
 import fredboat.dike.io.out.handle.*;
 import fredboat.dike.session.Session;
-import fredboat.dike.Config;
 import fredboat.dike.util.JsonHandler;
 import fredboat.dike.util.OpCodes;
 import org.java_websocket.WebSocket;
@@ -15,12 +15,14 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Service
 public class LocalGateway extends WebSocketServer {
 
     private static final Logger log = LoggerFactory.getLogger(LocalGateway.class);
@@ -29,8 +31,8 @@ public class LocalGateway extends WebSocketServer {
     private final JsonHandler jsonHandler;
     private ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
 
-    public LocalGateway() {
-        super(new InetSocketAddress(Config.dike_host, Config.dike_port));
+    public LocalGateway(Config config) {
+        super(new InetSocketAddress(config.host(), config.port()));
 
         jsonHandler = new JsonHandler();
 
