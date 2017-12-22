@@ -46,7 +46,7 @@ public class RestRequester {
                 .build();
 
         Ratelimit ratelimit = ratelimits.computeIfAbsent(route, __ -> new Ratelimit(
-                        10000,
+                        Integer.MAX_VALUE,
                         ___ -> Instant.now().plusSeconds(300), // Typically gets set, this is a start guess
                         ____ -> {
                             log.warn("The {} route hit the ratelimit!", route);

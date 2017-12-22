@@ -5,9 +5,9 @@
 
 package fredboat.dike.session;
 
-import fredboat.dike.util.Const;
+import fredboat.dike.io.rest.RestRequester;
+import fredboat.dike.io.rest.Route;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import okhttp3.Response;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public class ShardIdentifier {
     private final int shardId;
     private final int shardCount;
 
-    public ShardIdentifier(String token, long user, int shardId, int shardCount) {
+    private ShardIdentifier(String token, long user, int shardId, int shardCount) {
         this.token = token;
         this.user = user;
         this.shardId = shardId;
@@ -35,13 +35,12 @@ public class ShardIdentifier {
 
     public static ShardIdentifier getFromToken(String token, int shardId, int shardCount) throws IOException {
 
-        Request request = new Request.Builder()
-                .url(Const.API_GET_CURRENT_USER)
-                .header("Authorization", "Bot " + token)
-                .header("User-Agent", Const.USER_AGENT)
-                .build();
-
-        Response response = http.newCall(request).execute();
+        Response response = null;
+        try {
+            response = RestRequester.instance(token).requestSync(Route.USER_AT_ME);
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        }
 
         if (response.code() != 200) {
             log.warn("Not code 200: " + response.code());
