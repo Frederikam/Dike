@@ -218,6 +218,11 @@ public class DiscordGateway extends WebSocketAdapter {
                     log.error("Got interrupted while reconnecting shard");
                 }
                 setState(WAITING_FOR_HELLO_TO_IDENTIFY);
+                try {
+                    connect();
+                } catch (IOException | WebSocketException e) {
+                    throw new RuntimeException("Failed to reconnect", e);
+                }
             }).start();
         }
     }

@@ -37,7 +37,13 @@ public class IdentifyRatelimitHandler {
         long start = System.currentTimeMillis();
 
         // This latch is finished when we are ready to IDENTIFY
-        wshard.greenlightLatch.await();
+        try {
+            wshard.greenlightLatch.await();
+        } catch (InterruptedException e) {
+            wshard.identifiedLatch.countDown(); // Prevents some unnecessary waiting
+            throw e;
+        }
+
         log.info("Gave the greenlight to {} after {}ms",
                 shard.getSession().getIdentifier().toStringShort(),
                 System.currentTimeMillis() - start);
