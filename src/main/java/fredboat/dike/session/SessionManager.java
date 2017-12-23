@@ -7,7 +7,6 @@ package fredboat.dike.session;
 
 import fredboat.dike.Config;
 import fredboat.dike.Launcher;
-import fredboat.dike.io.out.LocalGateway;
 import org.java_websocket.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,8 +41,8 @@ public class SessionManager {
         return sessions.get(identifier);
     }
 
-    public Session createSession(ShardIdentifier identifier, LocalGateway localGateway, WebSocket localSocket, String op2) {
-        Session session = new Session(identifier, localGateway, localSocket, op2);
+    public Session createSession(ShardIdentifier identifier, WebSocket localSocket, String op2) {
+        Session session = new Session(identifier, localSocket, op2);
         sessions.put(identifier, session);
         return session;
     }

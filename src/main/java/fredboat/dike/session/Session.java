@@ -5,11 +5,9 @@
 
 package fredboat.dike.session;
 
-import com.neovisionaries.ws.client.WebSocketException;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import fredboat.dike.io.in.DiscordGateway;
 import fredboat.dike.io.in.DiscordQueuePoller;
-import fredboat.dike.io.out.LocalGateway;
 import fredboat.dike.session.cache.Cache;
 import fredboat.dike.session.cache.Dispatch;
 import fredboat.dike.util.GatewayUtil;
@@ -17,7 +15,6 @@ import org.java_websocket.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
@@ -33,20 +30,18 @@ public class Session {
     private DiscordGateway discordGateway;
     @SuppressWarnings("FieldCanBeLocal")
     private final DiscordQueuePoller poller;
-    private LocalGateway localGateway;
     private WebSocket localSocket;
     private final Cache cache = new Cache();
     private AtomicLong clientSequence = new AtomicLong(0);
     private Instant lastTimeLocalDisconnected = Instant.EPOCH;
 
-    Session(ShardIdentifier identifier, LocalGateway localGateway, WebSocket localSocket, String op2) {
+    Session(ShardIdentifier identifier, WebSocket localSocket, String op2) {
         this.identifier = identifier;
-        this.localGateway = localGateway;
         this.localSocket = localSocket;
 
         try {
             discordGateway = new DiscordGateway(this, new URI(GatewayUtil.getGateway()), op2);
-        } catch (URISyntaxException | WebSocketException | IOException e) {
+        } catch (URISyntaxException e) {
             throw new RuntimeException("Failed to open gateway connection", e);
         }
 
@@ -73,10 +68,6 @@ public class Session {
         return discordGateway;
     }
 
-    public LocalGateway getLocalGateway() {
-        return localGateway;
-    }
-
     public WebSocket getLocalSocket() {
         return localSocket;
     }
@@ -96,6 +87,7 @@ public class Session {
         if (localSocket != null)
             localSocket.close(); // Maybe send OP 9 instead?
 
+        poller.shutdown();
         discordGateway.onShutdown();
     }
 

@@ -53,7 +53,7 @@ public class Heartbeater extends Thread {
         json.put("d", sequence.get());
         sequence.getAndIncrement();
 
-        gateway.getSession().sendDiscord(json.toString());
+        gateway.sendAsync(json.toString(), true);
     }
 
     void shutdown() {

@@ -10,7 +10,7 @@
 
 `[x]` Whitelisting
 
-`[ ]` WS Ratelimit
+`[x]` WS Ratelimit
 
 `[ ]` Reconnect op handling
 

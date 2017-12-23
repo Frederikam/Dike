@@ -54,8 +54,9 @@ public class DiscordGateway extends WebSocketAdapter {
      */
     @Nullable
     private CountDownLatch identifyLatch = null;
+    private WebsocketRateLimitHandler rateLimitHandler = new WebsocketRateLimitHandler();
 
-    public DiscordGateway(Session session, URI url, String op2) throws IOException, WebSocketException {
+    public DiscordGateway(Session session, URI url, String op2) {
         this.session = session;
         this.url = url;
         this.cache = session.getCache();
@@ -147,8 +148,9 @@ public class DiscordGateway extends WebSocketAdapter {
     }
 
     @Override
-    public void onConnected(WebSocket websocket, Map<String, List<String>> headers) throws Exception {
+    public void onConnected(WebSocket websocket, Map<String, List<String>> headers) {
         log.info("Connected to " + websocket.getURI());
+        rateLimitHandler.reset(websocket);
         failedConnectAttempts = 0;
     }
 
@@ -245,6 +247,14 @@ public class DiscordGateway extends WebSocketAdapter {
         MDC.put("shard", session.getIdentifier().toStringShort());
     }
 
+    public void sendAsync(String message) {
+        sendAsync(message, false);
+    }
+
+    public void sendAsync(String message, boolean priority) {
+        rateLimitHandler.sendAsync(message, priority);
+    }
+
     public void forward(String message) {
         session.sendLocal(message);
     }
@@ -290,9 +300,10 @@ public class DiscordGateway extends WebSocketAdapter {
      * Invoked by {@link Session} only
      */
     public void onShutdown() {
-        socket.sendClose();
         setState(SHUTDOWN);
+        socket.sendClose();
         heartbeater.shutdown();
+        if (rateLimitHandler != null) rateLimitHandler.shutdown();
     }
 
     public enum State {

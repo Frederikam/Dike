@@ -39,7 +39,7 @@ public class InHelloHandler extends IncomingHandler {
                 synchronized (cache) {
                     cache.invalidate(); // Throw away old entities
                 }
-                discordGateway.getSocket().sendText(op2);
+                discordGateway.sendAsync(op2, true);
                 discordGateway.setState(DiscordGateway.State.IDENTIFYING);
                 break;
             case WAITING_FOR_HELLO_TO_RESUME:
@@ -54,7 +54,7 @@ public class InHelloHandler extends IncomingHandler {
                 d.put("session_id", ((InDispatchHandler) discordGateway.getHandler(OpCodes.OP_0_DISPATCH)).getSessionId());
                 op6.put("d", d);
 
-                discordGateway.getSocket().sendText(op6.toString());
+                discordGateway.sendAsync(op6.toString(), true);
                 break;
             default:
                 throw new IllegalStateException("Not expecting OP 10 when in state: " + discordGateway.getState());

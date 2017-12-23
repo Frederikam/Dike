@@ -24,7 +24,7 @@ public class ConfigProvider {
     public ConfigurationProvider configurationProvider() {
         // Specify which files to load. Configuration from both files will be merged.
         //noinspection ArraysAsListWithZeroOrOneArgument
-        ConfigFilesProvider configFilesProvider = () -> Arrays.asList(Paths.get("dike.yaml"));
+        ConfigFilesProvider configFilesProvider = () -> Arrays.asList(Paths.get("dike.yml"));
 
         // Use local files as configuration store
         ConfigurationSource source = new FilesConfigurationSource(configFilesProvider);

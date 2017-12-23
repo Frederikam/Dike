@@ -68,6 +68,11 @@ public class Ratelimit {
         return remaining;
     }
 
+    public boolean canAcquire() {
+        checkReset();
+        return remaining > 0;
+    }
+
     public int getLimit() {
         return limit;
     }

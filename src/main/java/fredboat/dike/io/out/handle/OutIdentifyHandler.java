@@ -71,7 +71,7 @@ public class OutIdentifyHandler extends OutgoingHandler {
         }
 
         if (session == null) {
-            session = SessionManager.INSTANCE.createSession(identifier, localGateway, socket, json.toString());
+            session = SessionManager.INSTANCE.createSession(identifier, socket, json.toString());
         } else if (session.getLocalSocket().isOpen()) {
             // A session already exists, but it is already occupied by another client!
 
