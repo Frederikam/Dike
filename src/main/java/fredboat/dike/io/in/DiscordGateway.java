@@ -68,7 +68,7 @@ public class DiscordGateway extends WebSocketAdapter {
         handlers.add(OpCodes.OP_4_VOICE_STATE, new InNOPHandler(this));
         handlers.add(OpCodes.OP_5_VOICE_PING, new InNOPHandler(this));
         handlers.add(OpCodes.OP_6_RESUME, new InNOPHandler(this));
-        handlers.add(OpCodes.OP_7_RECONNECT, new InNOPHandler(this)); //TODO
+        handlers.add(OpCodes.OP_7_RECONNECT, new InReconnectHandler(this));
         handlers.add(OpCodes.OP_8_REQUEST_MEMBERS, new InNOPHandler(this));
         handlers.add(OpCodes.OP_9_INVALIDATE_SESSION, new InInvalidateSessionHandler(this));
         handlers.add(OpCodes.OP_10_HELLO, new InHelloHandler(this, op2));

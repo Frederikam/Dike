@@ -12,6 +12,8 @@
 
 `[x]` WS Ratelimit
 
-`[ ]` Reconnect op handling
+`[x]` Reconnect op handling
+
+`[ ]` No heartbeat ack should make us disconnect from Discord
 
 `[ ]` Bot<->Dike heartbeat handling
