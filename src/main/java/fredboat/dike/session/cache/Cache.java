@@ -6,7 +6,6 @@ import gnu.trove.map.hash.THashMap;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.NotThreadSafe;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,12 +14,12 @@ import java.util.Map;
 @NotThreadSafe
 public class Cache {
 
-    private static THashMap<Long, Guild> guilds = new THashMap<>();
+    private THashMap<Long, Guild> guilds = new THashMap<>();
     private int largeThreshold = 0;
     private Map<String, Any> readyPayload = null;
 
     @GuardedBy("this")
-    public void createGuild(Any d) throws IOException {
+    public void createGuild(Any d) {
         Long id = d.get("id").toLong();
         guilds.put(id, new Guild(this, d));
     }
