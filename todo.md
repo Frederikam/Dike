@@ -14,6 +14,8 @@
 
 `[x]` Reconnect op handling
 
-`[ ]` No heartbeat ack should make us disconnect from Discord
+`[x]` No heartbeat ack should make us disconnect from Discord
 
 `[x]` Bot<->Dike heartbeat handling
+
+`[x]` Remove those super verbose log calls

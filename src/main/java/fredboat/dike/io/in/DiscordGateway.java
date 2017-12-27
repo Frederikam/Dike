@@ -10,7 +10,6 @@ import fredboat.dike.io.in.handle.*;
 import fredboat.dike.session.IdentifyRatelimitHandler;
 import fredboat.dike.session.Session;
 import fredboat.dike.session.SessionManager;
-import fredboat.dike.session.cache.Cache;
 import fredboat.dike.util.CloseCodes;
 import fredboat.dike.util.JsonHandler;
 import fredboat.dike.util.OpCodes;
@@ -27,6 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.DataFormatException;
 import java.util.zip.InflaterOutputStream;
 
@@ -36,19 +38,16 @@ public class DiscordGateway extends WebSocketAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(DiscordGateway.class);
 
+    @SuppressWarnings("FieldCanBeLocal")
+    private final ScheduledExecutorService executorService;
     private final ArrayList<IncomingHandler> handlers = new ArrayList<>();
     private final JsonHandler jsonHandler = new JsonHandler();
     private final Session session;
     private final URI url;
     private WebSocket socket;
     private final Heartbeater heartbeater = new Heartbeater(this);
-    /**
-     * If true we should not send any messages asides from OP 2 and OP 6
-     */
-    private volatile boolean locked = true;
     private volatile State state = INITIALIZING;
     private int failedConnectAttempts = 0;
-    private final Cache cache;
     /**
      * See {@link IdentifyRatelimitHandler}
      */
@@ -59,7 +58,12 @@ public class DiscordGateway extends WebSocketAdapter {
     public DiscordGateway(Session session, URI url, String op2) {
         this.session = session;
         this.url = url;
-        this.cache = session.getCache();
+
+        executorService = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "Executor-" + session.getIdentifier().toStringShort());
+            t.setDaemon(true);
+            return t;
+        });
 
         handlers.add(OpCodes.OP_0_DISPATCH, new InDispatchHandler(this));
         handlers.add(OpCodes.OP_1_HEARTBEAT, new InHeartbeatHandler(this));
@@ -72,8 +76,15 @@ public class DiscordGateway extends WebSocketAdapter {
         handlers.add(OpCodes.OP_8_REQUEST_MEMBERS, new InNOPHandler(this));
         handlers.add(OpCodes.OP_9_INVALIDATE_SESSION, new InInvalidateSessionHandler(this));
         handlers.add(OpCodes.OP_10_HELLO, new InHelloHandler(this, op2));
-        handlers.add(OpCodes.OP_11_HEARTBEAT_ACK, new InForwardingHandler(this)); // We may want to implement this
+        handlers.add(OpCodes.OP_11_HEARTBEAT_ACK, new InHeartbeatAckHandler(this));
         handlers.add(OpCodes.OP_12_GUILD_SYNC, new InNOPHandler(this));
+
+        executorService.scheduleAtFixedRate(
+                ((InHeartbeatAckHandler) handlers.get(OpCodes.OP_11_HEARTBEAT_ACK)).getHeartbeatAckWatchdogTask,
+                1,
+                1,
+                TimeUnit.MINUTES
+        );
 
         /* Wait for identify greenlight and connect */
         new Thread(() -> {
@@ -92,7 +103,7 @@ public class DiscordGateway extends WebSocketAdapter {
                 log.error("Exception while connecting to Discord", e);
                 SessionManager.INSTANCE.invalidate(session);
             }
-        }, "connect-thread-"+session.getIdentifier().getUser()).start();
+        }, "connect-thread-" + session.getIdentifier().getUser()).start();
     }
 
     private void connect() throws IOException, WebSocketException {
@@ -303,6 +314,7 @@ public class DiscordGateway extends WebSocketAdapter {
         setState(SHUTDOWN);
         socket.sendClose();
         heartbeater.shutdown();
+        executorService.shutdown();
         if (rateLimitHandler != null) rateLimitHandler.shutdown();
     }
 
