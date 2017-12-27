@@ -14,6 +14,7 @@ import fredboat.dike.util.OpCodes;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,6 +71,26 @@ public class LocalGateway extends WebSocketServer {
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         log.info("Opened connection from " + conn.getRemoteSocketAddress());
         socketContexts.put(conn.getResourceDescriptor(), new LocalSocketContext(conn));
+
+
+        /* Send the OP 10 HELLO message */
+        String hostname = "dike_unknown_hostname";
+        try {
+            hostname = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        String json = new JSONObject()
+                .put("op", OpCodes.OP_10_HELLO)
+                .put("d", new JSONObject()
+                    .put("heartbeat_interval", 41250) // Usual value
+                    .put("_trace", hostname))
+                .put("t", JSONObject.NULL)
+                .put("s", JSONObject.NULL)
+                .toString();
+
+        conn.send(json);
     }
 
     @Override
@@ -126,7 +149,9 @@ public class LocalGateway extends WebSocketServer {
 
     @Nullable
     public Session getSession(WebSocket conn) {
-        return socketContexts.get(conn.getResourceDescriptor()).getSession();
+        LocalSocketContext ctx = getContext(conn);
+        if (ctx == null) return null;
+        return ctx.getSession();
     }
 
     public void setSession(@NonNull WebSocket conn, @Nullable Session session) {
