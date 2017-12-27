@@ -16,4 +16,4 @@
 
 `[ ]` No heartbeat ack should make us disconnect from Discord
 
-`[ ]` Bot<->Dike heartbeat handling
+`[x]` Bot<->Dike heartbeat handling

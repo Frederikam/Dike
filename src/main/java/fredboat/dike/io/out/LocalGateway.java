@@ -5,6 +5,7 @@
 
 package fredboat.dike.io.out;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import fredboat.dike.Config;
 import fredboat.dike.io.out.handle.*;
 import fredboat.dike.session.Session;
@@ -17,10 +18,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class LocalGateway extends WebSocketServer {
@@ -29,8 +36,9 @@ public class LocalGateway extends WebSocketServer {
 
     private final ArrayList<OutgoingHandler> handlers = new ArrayList<>();
     private final JsonHandler jsonHandler;
-    private ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, LocalSocketContext> socketContexts = new ConcurrentHashMap<>();
     private final Config config;
+    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     public LocalGateway(Config config) {
         super(new InetSocketAddress(config.host(), config.port()));
@@ -40,7 +48,7 @@ public class LocalGateway extends WebSocketServer {
 
         // Opcodes that are received only to the client will be ignored by OutNOPHandler
         handlers.add(OpCodes.OP_0_DISPATCH, new OutNOPHandler(this));
-        handlers.add(OpCodes.OP_1_HEARTBEAT, new OutNOPHandler(this)); // We may want to implement this
+        handlers.add(OpCodes.OP_1_HEARTBEAT, new OutHeartbeatHandler(this));
         handlers.add(OpCodes.OP_2_IDENTIFY, new OutIdentifyHandler(this));
         handlers.add(OpCodes.OP_3_PRESENCE, new OutForwardingHandler(this));
         handlers.add(OpCodes.OP_4_VOICE_STATE, new OutForwardingHandler(this));
@@ -52,11 +60,14 @@ public class LocalGateway extends WebSocketServer {
         handlers.add(OpCodes.OP_10_HELLO, new OutNOPHandler(this));
         handlers.add(OpCodes.OP_11_HEARTBEAT_ACK, new OutNOPHandler(this));
         handlers.add(OpCodes.OP_12_GUILD_SYNC, new OutForwardingHandler(this));
+
+        executor.scheduleAtFixedRate(new BotHeartbeatWatchdog(this), 0, 50, TimeUnit.SECONDS);
     }
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         log.info("Opened connection from " + conn.getRemoteSocketAddress());
+        socketContexts.put(conn.getResourceDescriptor(), new LocalSocketContext(conn));
     }
 
     @Override
@@ -69,11 +80,12 @@ public class LocalGateway extends WebSocketServer {
                     + " :: remote = " + remote);
         }
 
-        if (getSession(conn) != null) {
-            getSession(conn).onLocalSocketDisconnect();
+        Session session = getSession(conn);
+        if (session != null) {
+            session.onLocalSocketDisconnect();
         }
 
-        sessions.remove(conn.getResourceDescriptor());
+        socketContexts.remove(conn.getResourceDescriptor());
     }
 
     @Override
@@ -107,16 +119,27 @@ public class LocalGateway extends WebSocketServer {
         log.info("Started listening on " + getAddress());
     }
 
-    public void forward(WebSocket conn, String string) {
+    public void forward(@Nonnull WebSocket conn, @Nonnull String string) {
+        //noinspection ConstantConditions
         getSession(conn).sendDiscord(string);
     }
 
+    @Nullable
     public Session getSession(WebSocket conn) {
-        return sessions.get(conn.getResourceDescriptor());
+        return socketContexts.get(conn.getResourceDescriptor()).getSession();
     }
 
-    public void setSession(WebSocket conn, Session session) {
-        sessions.put(conn.getResourceDescriptor(), session);
+    public void setSession(@NonNull WebSocket conn, @Nullable Session session) {
+        socketContexts.get(conn.getResourceDescriptor()).setSession(session);
+    }
+
+    @Nullable
+    public LocalSocketContext getContext(@NonNull WebSocket ws) {
+        return socketContexts.get(ws.getResourceDescriptor());
+    }
+
+    Collection<LocalSocketContext> getContexts() {
+        return socketContexts.values();
     }
 
     public Config getConfig() {

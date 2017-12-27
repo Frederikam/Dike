@@ -132,4 +132,11 @@ public class Session {
     public Cache getCache() {
         return cache;
     }
+
+    @Override
+    public String toString() {
+        return "Session{" +
+                "identifier=" + identifier +
+                '}';
+    }
 }
