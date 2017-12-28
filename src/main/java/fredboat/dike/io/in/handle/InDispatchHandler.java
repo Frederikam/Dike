@@ -81,14 +81,14 @@ public class InDispatchHandler extends IncomingHandler {
                 Any dCreate = JsonIterator.deserialize(message).get("d");
                 Guild guild1 = cache.getGuild(dCreate.get("guild_id").toLong());
 
-                if (guild1 == null) throw new RuntimeException("Received " + type + " for unknown guild!");
+                if (guild1 == null) throw new RuntimeException("Received " + type + " for unknown guild! d=" + dCreate);
                 guild1.createEntity(entityType, dCreate);
                 break;
             default:
                 Any dDelete = JsonIterator.deserialize(message).get("d");
                 Guild guild2 = cache.getGuild(dDelete.get("guild_id").toLong());
 
-                if (guild2 == null) throw new RuntimeException("Received " + type + " for unknown guild!");
+                if (guild2 == null) throw new RuntimeException("Received " + type + " for unknown guild! d=" + dDelete);
                 guild2.deleteEntity(entityType, dDelete);
                 break;
         }
