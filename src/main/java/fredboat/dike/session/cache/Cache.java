@@ -30,7 +30,7 @@ public class Cache {
 
     @GuardedBy("this")
     public void deleteGuild(Any d) {
-        Long id = d.get("d").get("id").toLong();
+        Long id = d.get("id").toLong();
         if (guilds.remove(id) == null) {
             throw new RuntimeException("Attempted to delete guild " + id + " but it doesn't exist!");
         }
