@@ -189,4 +189,7 @@ public class Guild {
         return d.get("id").toLong();
     }
 
+    Any getD() {
+        return d;
+    }
 }

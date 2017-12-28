@@ -2,6 +2,8 @@ package fredboat.dike.session.cache;
 
 import com.jsoniter.any.Any;
 import gnu.trove.map.hash.THashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -13,6 +15,8 @@ import java.util.Map;
 
 @NotThreadSafe
 public class Cache {
+
+    private static final Logger log = LoggerFactory.getLogger(Cache.class);
 
     private THashMap<Long, Guild> guilds = new THashMap<>();
     private int largeThreshold = 0;
@@ -66,7 +70,11 @@ public class Cache {
 
         /* GUILD_CREATE */
         for (Guild guild : guilds.values())
-            list.add(guild.computeDispatch());
+            try {
+                list.add(guild.computeDispatch());
+            } catch (RuntimeException e) {
+                log.error("Exception while constructing guild dispatch. Guild d={}", guild.getD(), e);
+            }
 
         return list;
     }
