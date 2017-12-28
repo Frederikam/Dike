@@ -14,6 +14,7 @@ import fredboat.dike.util.OpCodes;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,8 +86,8 @@ public class LocalGateway extends WebSocketServer {
         String json = new JSONObject()
                 .put("op", OpCodes.OP_10_HELLO)
                 .put("d", new JSONObject()
-                    .put("heartbeat_interval", 41250) // Usual value
-                    .put("_trace", hostname))
+                        .put("heartbeat_interval", 41250) // Usual value
+                        .put("_trace", new JSONArray().put(hostname)))
                 .put("t", JSONObject.NULL)
                 .put("s", JSONObject.NULL)
                 .toString();
