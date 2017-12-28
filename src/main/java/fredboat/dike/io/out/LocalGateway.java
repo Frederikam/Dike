@@ -41,6 +41,7 @@ public class LocalGateway extends WebSocketServer {
     private final JsonHandler jsonHandler;
     private ConcurrentHashMap<String, LocalSocketContext> socketContexts = new ConcurrentHashMap<>();
     private final Config config;
+    @SuppressWarnings("FieldCanBeLocal")
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     public LocalGateway(Config config) {
@@ -113,7 +114,7 @@ public class LocalGateway extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket conn, String message) {
-        log.info(conn.getRemoteSocketAddress() + " " + message);
+        log.trace(conn.getRemoteSocketAddress() + " " + message);
 
         int op = jsonHandler.getOp(message);
 

@@ -140,7 +140,7 @@ public class DiscordGateway extends WebSocketAdapter {
     @Override
     public void onTextMessage(WebSocket websocket, String text) {
         try {
-            log.info(text);
+            log.trace(text);
 
             int op = jsonHandler.getOp(text);
 
