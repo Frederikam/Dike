@@ -81,6 +81,11 @@ public class InDispatchHandler extends IncomingHandler {
                 Any dCreate = JsonIterator.deserialize(message).get("d");
                 Guild guild1 = cache.getGuild(dCreate.get("guild_id").toLong());
 
+                if (entityType == EntityType.ROLE) {
+                    // The role is wrapped in a JSON object together with the guild_id
+                    dCreate = dCreate.get("role");
+                }
+
                 if (guild1 == null) throw new RuntimeException("Received " + type + " for unknown guild! d=" + dCreate);
                 guild1.createEntity(entityType, dCreate);
                 break;

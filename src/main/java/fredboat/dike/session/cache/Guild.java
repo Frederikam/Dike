@@ -7,12 +7,15 @@ package fredboat.dike.session.cache;
 
 import com.jsoniter.ValueType;
 import com.jsoniter.any.Any;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Guild {
 
+    private static final Logger log = LoggerFactory.getLogger(Guild.class);
     private final Cache cache;
 
     private Any d;
@@ -84,7 +87,9 @@ public class Guild {
     }
 
     public void deleteEntity(EntityType type, Any payload) {
-        long id = payload.get("id").toLong();
+        long id = payload.get(
+                type == EntityType.ROLE ? "role_id" : "id"
+        ).toLong();
 
         switch (type) {
             case CHANNEL:
@@ -95,7 +100,7 @@ public class Guild {
                 presences.remove(id);
                 break;
             case ROLE:
-                channels.remove(id);
+                roles.remove(id);
                 break;
             case EMOJI:
                 emojis.remove(id);
