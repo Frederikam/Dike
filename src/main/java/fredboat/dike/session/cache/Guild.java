@@ -98,6 +98,7 @@ public class Guild {
             case MEMBER:
                 members.remove(id);
                 presences.remove(id);
+                voiceStates.remove(id);
                 break;
             case ROLE:
                 roles.remove(id);
