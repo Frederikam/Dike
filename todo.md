@@ -19,3 +19,21 @@
 `[x]` Bot<->Dike heartbeat handling
 
 `[x]` Remove those super verbose log calls
+
+###QA
+  Create guild
+  Delete guild
+  Create member
+  Update member
+  Delete member
+  Create Channel
+  Update Channel
+  Delete Channel
+x Create role
+x Update role
+x Delete role
+  Create emoji
+  Update emoji
+  Delete emoji
+  Voice state
+  Presence

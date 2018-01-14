@@ -67,21 +67,20 @@ public class Guild {
         }
     }
 
+    // TODO: Fix emote handling
     public void createEntity(EntityType type, Any payload) {
-        long id = payload.get("id").toLong();
-
         switch (type) {
             case CHANNEL:
-                channels.put(id, payload);
+                channels.put(payload.get("id").toLong(), payload);
                 break;
             case MEMBER:
-                members.put(id, payload);
+                members.put(payload.get("user").get("id").toLong(), payload);
                 break;
             case ROLE:
-                roles.put(id, payload);
+                roles.put(payload.get("id").toLong(), payload);
                 break;
             case EMOJI:
-                emojis.put(id, payload);
+                emojis.put(payload.get("id").toLong(), payload);
                 break;
         }
     }
