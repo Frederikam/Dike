@@ -8,3 +8,4 @@
 /build/
 src/main/java/fredboat/dike/.DS_Store
 /logs/
+/test-credentials.yml

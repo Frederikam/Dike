@@ -56,14 +56,19 @@ dependencies {
     compile group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '3.1.0'
 
     //Configuration
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.8.RELEASE'
-    compile group: "org.springframework.boot", name: "spring-boot-starter", version: "1.5.8.RELEASE"
-    compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: "1.5.8.RELEASE"
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.9.RELEASE'
+    compile group: "org.springframework.boot", name: "spring-boot-starter", version: "1.5.9.RELEASE"
+    compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure', version: "1.5.9.RELEASE"
     compile group: "org.cfg4j", name: "cfg4j-core", version: "4.4.1"
 
     //tests
+    testCompile group: 'net.dv8tion', name: 'JDA', version: '3.5.0_329'
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.0.1'
     testRuntime group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.0.1'
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '1.5.9.RELEASE'
+    testCompile 'com.github.sbrannen:spring-test-junit5:1.0.3' // JUnit5 support for Spring 1.5
+    // https://stackoverflow.com/questions/48019430/junit5-with-spring-boot-1-5
+
     // To avoid compiler warnings about @API annotations in JUnit code.
     testCompileOnly group: 'org.apiguardian', name: 'apiguardian-api', version: '1.0.0'
 }

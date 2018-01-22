@@ -13,9 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class SessionManager {
@@ -50,6 +48,10 @@ public class SessionManager {
     public void invalidate(Session session) {
         sessions.remove(session.getIdentifier());
         session.onShutdown();
+    }
+
+    public Collection<Session> getSessions() {
+        return sessions.values();
     }
 
     private void killOldSessions() {
