@@ -1,9 +1,12 @@
 package fredboat.dike;
 
+import fredboat.dike.cache.CacheTestEventListener;
+import fredboat.dike.io.out.LocalGateway;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 
@@ -19,11 +22,15 @@ public class TestBeans {
     }
 
     @Bean
-    public JDA testBot(TestConfigImpl config, Game game) throws LoginException, InterruptedException {
+    @Autowired
+    public JDA testBot(TestConfig config, Game game, CacheTestEventListener eventListener) throws LoginException, InterruptedException {
+        new LocalGateway(config).start();
+
         return new JDABuilder(AccountType.BOT)
                 .setToken(config.testBotToken())
                 .useSharding(0, 1)
                 .setGame(game)
+                .addEventListener(eventListener)
                 .buildBlocking();
     }
 

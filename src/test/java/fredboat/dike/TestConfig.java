@@ -2,7 +2,7 @@ package fredboat.dike;
 
 public interface TestConfig extends Config {
 
-    String testGuild();
+    long testGuild();
     String testBotToken();
     String testUserToken();
 
