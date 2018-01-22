@@ -5,6 +5,7 @@ import fredboat.dike.TestConfigImpl;
 import fredboat.dike.session.Session;
 import fredboat.dike.session.SessionManager;
 import fredboat.dike.session.cache.Cache;
+import fredboat.dike.util.DikeSessionController;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
 import org.junit.Assert;
@@ -20,7 +21,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.Collection;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {TestConfigImpl.class, TestBeans.class, CacheTestEventListener.class})
+@ContextConfiguration(classes = {TestConfigImpl.class, TestBeans.class, CacheTestEventListener.class,
+        DikeSessionController.class})
 public class CacheTests {
 
     private static final Logger log = LoggerFactory.getLogger(CacheTests.class);

@@ -6,6 +6,7 @@ import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.Game;
+import net.dv8tion.jda.core.utils.SessionController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +24,8 @@ public class TestBeans {
 
     @Bean
     @Autowired
-    public JDA testBot(TestConfig config, Game game, CacheTestEventListener eventListener) throws LoginException, InterruptedException {
+    public JDA testBot(TestConfig config, Game game, CacheTestEventListener eventListener,
+                       SessionController controller) throws LoginException, InterruptedException {
         new LocalGateway(config).start();
 
         return new JDABuilder(AccountType.BOT)
@@ -31,6 +33,7 @@ public class TestBeans {
                 .useSharding(0, 1)
                 .setGame(game)
                 .addEventListener(eventListener)
+                .setSessionController(controller)
                 .buildBlocking();
     }
 
