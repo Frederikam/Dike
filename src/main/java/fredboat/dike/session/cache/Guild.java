@@ -19,12 +19,12 @@ public class Guild {
     private final Cache cache;
 
     private Any d;
-    private ConcurrentHashMap<Long, Any> channels = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Long, Any> members = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Long, Any> roles = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Long, Any> emojis = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Long, Any> voiceStates = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Long, Any> presences = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, Any> channels = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, Any> members = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, Any> roles = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, Any> emojis = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, Any> voiceStates = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, Any> presences = new ConcurrentHashMap<>();
 
     Guild(Cache cache, Any d) {
         this.cache = cache;

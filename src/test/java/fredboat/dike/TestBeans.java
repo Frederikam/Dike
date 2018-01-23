@@ -1,6 +1,6 @@
 package fredboat.dike;
 
-import fredboat.dike.cache.CacheTestEventListener;
+import fredboat.dike.session.cache.CacheTestEventListener;
 import fredboat.dike.io.out.LocalGateway;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;

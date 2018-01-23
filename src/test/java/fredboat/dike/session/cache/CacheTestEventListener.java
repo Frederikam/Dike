@@ -1,4 +1,4 @@
-package fredboat.dike.cache;
+package fredboat.dike.session.cache;
 
 import fredboat.dike.TestConfigImpl;
 import net.dv8tion.jda.core.events.Event;
