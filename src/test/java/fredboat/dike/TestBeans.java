@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 
 import javax.security.auth.login.LoginException;
+import java.io.IOException;
 
 @TestConfiguration
 public class TestBeans {
@@ -26,7 +27,15 @@ public class TestBeans {
     @Autowired
     public JDA testBot(TestConfig config, Game game, CacheTestEventListener eventListener,
                        SessionController controller) throws LoginException, InterruptedException {
-        new LocalGateway(config).start();
+        LocalGateway localGateway = new LocalGateway(config);
+        localGateway.start();
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                localGateway.stop();
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }));
 
         return new JDABuilder(AccountType.BOT)
                 .setToken(config.testBotToken())

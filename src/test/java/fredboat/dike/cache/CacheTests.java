@@ -29,16 +29,16 @@ public class CacheTests {
 
     @Autowired
     private TestConfigImpl config;
-    private Cache cache;
-    private Session session = null;
     @Autowired
     @Qualifier("testBot")
     private JDA testBot;
     @Autowired
     @Qualifier("userBot")
     private JDA userBot;
-    private Guild jGuild = null;
-    private fredboat.dike.session.cache.Guild dGuild = null;
+    private static Guild jGuild = null;
+    private static fredboat.dike.session.cache.Guild dGuild = null;
+    private static Cache cache;
+    private static Session session = null;
 
     @Test
     void sessionExists() {
@@ -48,6 +48,7 @@ public class CacheTests {
         for (Session s : sessions) {session = s;}
         Assert.assertNotNull(session);
         cache = session.getCache();
+        Assert.assertNotNull(cache);
     }
 
     @Test
