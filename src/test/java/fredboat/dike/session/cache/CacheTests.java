@@ -67,13 +67,27 @@ public class CacheTests {
 
     @Test
     void aSameGuilds() {
+        List<Long> jGuilds = new ArrayList<>();
+        List<Long> dGuilds = new ArrayList<>();
+        testBot.getGuilds().forEach((g) -> jGuilds.add(g.getIdLong()));
+        cache.guilds.forEachValue((g) -> dGuilds.add(g.getId()));
+        assetListsEquals(jGuilds, dGuilds);
+    }
+
+    @Test
+    void aSameMembers() {
         List<Long> jMembers = new ArrayList<>();
         List<Long> dMembers = new ArrayList<>();
         jGuild.getMembers().forEach((m) -> jMembers.add(m.getUser().getIdLong()));
         dGuild.members.forEach((key, value) -> dMembers.add(key));
-        jMembers.sort(Long::compareTo);
-        dMembers.sort(Long::compareTo);
-        Assert.assertEquals(jMembers, dMembers);
+        assetListsEquals(jMembers, dMembers);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void assetListsEquals(List<? extends Comparable> a, List<? extends Comparable> b) {
+        a.sort(Comparable::compareTo);
+        b.sort(Comparable::compareTo);
+        Assert.assertEquals(a, b);
     }
 
 }

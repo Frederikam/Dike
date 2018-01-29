@@ -18,7 +18,7 @@ public class Cache {
 
     private static final Logger log = LoggerFactory.getLogger(Cache.class);
 
-    private THashMap<Long, Guild> guilds = new THashMap<>();
+    THashMap<Long, Guild> guilds = new THashMap<>();
     private int largeThreshold = 0;
     private Map<String, Any> readyPayload = null;
 
