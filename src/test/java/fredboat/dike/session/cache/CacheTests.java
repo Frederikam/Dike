@@ -8,6 +8,7 @@ import fredboat.dike.util.DikeSessionController;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
 import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +29,7 @@ import java.util.List;
 public class CacheTests {
 
     private static final Logger log = LoggerFactory.getLogger(CacheTests.class);
+    private static CacheTests ins;
 
     @Autowired
     private TestConfigImpl config;
@@ -45,10 +47,7 @@ public class CacheTests {
     // Uses before each to avoid being static
     @BeforeEach
     void beforeEach() {
-        jGuild = testBot.getGuildById(config.testGuild());
-        Assert.assertNotNull(jGuild);
-        dGuild = cache.getGuild(config.testGuild());
-        Assert.assertNotNull(dGuild);
+        ins = this;
 
         // Validate sessions
         Collection<Session> sessions = SessionManager.INSTANCE.getSessions();
@@ -60,6 +59,12 @@ public class CacheTests {
         Assert.assertNotNull(session);
         cache = session.getCache();
         Assert.assertNotNull(cache);
+
+        // Validate guilds
+        jGuild = testBot.getGuildById(config.testGuild());
+        Assert.assertNotNull(jGuild);
+        dGuild = cache.getGuild(config.testGuild());
+        Assert.assertNotNull(dGuild);
     }
 
     @Test
@@ -115,6 +120,12 @@ public class CacheTests {
         jGuild.getVoiceStates().forEach((s) -> jStates.add(s.getMember().getUser().getIdLong()));
         dGuild.voiceStates.forEach((key, value) -> dStates.add(key));
         assetListsEquals(jStates, dStates);
+    }
+
+    @AfterAll
+    static void afterAll() {
+        ins.testBot.shutdown();
+        ins.userBot.shutdown();
     }
 
     @SuppressWarnings("unchecked")
