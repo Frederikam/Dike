@@ -83,6 +83,43 @@ public class CacheTests {
         assetListsEquals(jMembers, dMembers);
     }
 
+    @Test
+    void aSameChannels() {
+        List<Long> jChannels = new ArrayList<>();
+        List<Long> dChannels = new ArrayList<>();
+        jGuild.getTextChannels().forEach((c) -> jChannels.add(c.getIdLong()));
+        jGuild.getVoiceChannels().forEach((c) -> jChannels.add(c.getIdLong()));
+        dGuild.channels.forEach((key, value) -> dChannels.add(key));
+        assetListsEquals(jChannels, dChannels);
+    }
+
+    @Test
+    void aSameRoles() {
+        List<Long> jRoles = new ArrayList<>();
+        List<Long> dRoles = new ArrayList<>();
+        jGuild.getRoles().forEach((r) -> jRoles.add(r.getIdLong()));
+        dGuild.roles.forEach((key, value) -> dRoles.add(key));
+        assetListsEquals(jRoles, dRoles);
+    }
+
+    @Test
+    void aSameEmotes() {
+        List<Long> jEmote = new ArrayList<>();
+        List<Long> dEmote = new ArrayList<>();
+        jGuild.getEmotes().forEach((e) -> jEmote.add(e.getIdLong()));
+        dGuild.emotes.forEach((key, value) -> dEmote.add(key));
+        assetListsEquals(jEmote, dEmote);
+    }
+
+    @Test
+    void aSameVoiceStates() {
+        List<Long> jStates = new ArrayList<>();
+        List<Long> dStates = new ArrayList<>();
+        jGuild.getVoiceStates().forEach((s) -> jStates.add(s.getMember().getUser().getIdLong()));
+        dGuild.voiceStates.forEach((key, value) -> dStates.add(key));
+        assetListsEquals(jStates, dStates);
+    }
+
     @SuppressWarnings("unchecked")
     private void assetListsEquals(List<? extends Comparable> a, List<? extends Comparable> b) {
         a.sort(Comparable::compareTo);

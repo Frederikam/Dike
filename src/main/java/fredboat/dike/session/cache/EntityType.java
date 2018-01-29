@@ -9,5 +9,5 @@ public enum EntityType {
     CHANNEL,
     MEMBER,
     ROLE,
-    EMOJI
+    EMOTE
 }

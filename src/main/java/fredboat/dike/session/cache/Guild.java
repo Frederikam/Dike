@@ -22,9 +22,9 @@ public class Guild {
     ConcurrentHashMap<Long, Any> channels = new ConcurrentHashMap<>();
     ConcurrentHashMap<Long, Any> members = new ConcurrentHashMap<>();
     ConcurrentHashMap<Long, Any> roles = new ConcurrentHashMap<>();
-    ConcurrentHashMap<Long, Any> emojis = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Long, Any> emotes = new ConcurrentHashMap<>();
     ConcurrentHashMap<Long, Any> voiceStates = new ConcurrentHashMap<>();
-    ConcurrentHashMap<Long, Any> presences = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Long, Any> presences = new ConcurrentHashMap<>();
 
     Guild(Cache cache, Any d) {
         this.cache = cache;
@@ -42,7 +42,7 @@ public class Guild {
         }
 
         for (Any payload : d.get("emojis").asList()) {
-            createEntity(EntityType.EMOJI, payload);
+            createEntity(EntityType.EMOTE, payload);
         }
 
         for (Any payload : d.get("voice_states").asList()) {
@@ -62,12 +62,12 @@ public class Guild {
         for (Any payload : d.get("roles").asList()) {
             createEntity(EntityType.ROLE, payload);
         }
-        for (Any payload : d.get("emojis").asList()) {
-            createEntity(EntityType.EMOJI, payload);
+        for (Any payload : d.get("emotes").asList()) {
+            createEntity(EntityType.EMOTE, payload);
         }
     }
 
-    // TODO: Fix emote handling
+    // TODO: Fix emotes handling
     public void createEntity(EntityType type, Any payload) {
         switch (type) {
             case CHANNEL:
@@ -79,8 +79,8 @@ public class Guild {
             case ROLE:
                 roles.put(payload.get("id").toLong(), payload);
                 break;
-            case EMOJI:
-                emojis.put(payload.get("id").toLong(), payload);
+            case EMOTE:
+                emotes.put(payload.get("id").toLong(), payload);
                 break;
         }
     }
@@ -102,8 +102,8 @@ public class Guild {
             case ROLE:
                 roles.remove(id);
                 break;
-            case EMOJI:
-                emojis.remove(id);
+            case EMOTE:
+                emotes.remove(id);
                 break;
         }
     }
@@ -155,7 +155,7 @@ public class Guild {
 
         map.put("channels", Any.wrap(channels.values()));
         map.put("roles", Any.wrap(roles.values()));
-        map.put("emojis", Any.wrap(emojis.values()));
+        map.put("emojis", Any.wrap(emotes.values()));
         map.put("voice_states", Any.wrap(voiceStates.values()));
         map.put("presences", Any.wrap(presences.values()));
         map.put("member_count", Any.wrap(members.size()));

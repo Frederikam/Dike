@@ -65,7 +65,7 @@ public class InDispatchHandler extends IncomingHandler {
             case "GUILD_EMOJI_CREATE":
             case "GUILD_EMOJI_UPDATE":
             case "GUILD_EMOJI_DELETE":
-                entityType = EntityType.EMOJI;
+                entityType = EntityType.EMOTE;
                 break;
         }
 
