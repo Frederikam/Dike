@@ -71,7 +71,7 @@ public class CacheTests {
     }
 
     @Test
-    void aSameGuilds() {
+    void sameGuilds() {
         List<Long> jGuilds = new ArrayList<>();
         List<Long> dGuilds = new ArrayList<>();
         testBot.getGuilds().forEach((g) -> jGuilds.add(g.getIdLong()));
@@ -80,7 +80,7 @@ public class CacheTests {
     }
 
     @Test
-    void aSameMembers() {
+    void sameMembers() {
         List<Long> jMembers = new ArrayList<>();
         List<Long> dMembers = new ArrayList<>();
         jGuild.getMembers().forEach((m) -> jMembers.add(m.getUser().getIdLong()));
@@ -89,7 +89,7 @@ public class CacheTests {
     }
 
     @Test
-    void aSameChannels() {
+    void sameChannels() {
         List<Long> jChannels = new ArrayList<>();
         List<Long> dChannels = new ArrayList<>();
         jGuild.getTextChannels().forEach((c) -> jChannels.add(c.getIdLong()));
@@ -100,7 +100,7 @@ public class CacheTests {
     }
 
     @Test
-    void aSameRoles() {
+    void sameRoles() {
         List<Long> jRoles = new ArrayList<>();
         List<Long> dRoles = new ArrayList<>();
         jGuild.getRoles().forEach((r) -> jRoles.add(r.getIdLong()));
@@ -109,7 +109,7 @@ public class CacheTests {
     }
 
     @Test
-    void aSameEmotes() {
+    void sameEmotes() {
         List<Long> jEmote = new ArrayList<>();
         List<Long> dEmote = new ArrayList<>();
         jGuild.getEmotes().forEach((e) -> jEmote.add(e.getIdLong()));
