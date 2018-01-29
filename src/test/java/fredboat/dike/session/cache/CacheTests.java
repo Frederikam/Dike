@@ -91,6 +91,7 @@ public class CacheTests {
         List<Long> dChannels = new ArrayList<>();
         jGuild.getTextChannels().forEach((c) -> jChannels.add(c.getIdLong()));
         jGuild.getVoiceChannels().forEach((c) -> jChannels.add(c.getIdLong()));
+        jGuild.getCategories().forEach((c) -> jChannels.add(c.getIdLong()));
         dGuild.channels.forEach((key, value) -> dChannels.add(key));
         assetListsEquals(jChannels, dChannels);
     }
