@@ -8,7 +8,6 @@ import fredboat.dike.session.SessionManager;
 import fredboat.dike.util.DikeSessionController;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +22,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {TestConfigImpl.class, TestBeans.class, CacheTestEventListener.class,
@@ -52,20 +54,20 @@ public class CacheTests {
 
         // Validate sessions
         Collection<Session> sessions = SessionManager.INSTANCE.getSessions();
-        Assert.assertEquals(sessions.size(), 1);
+        assertEquals(sessions.size(), 1);
 
         for (Session s : sessions) {
             session = s;
         }
-        Assert.assertNotNull(session);
+        assertNotNull(session);
         cache = session.getCache();
-        Assert.assertNotNull(cache);
+        assertNotNull(cache);
 
         // Validate guilds
         jGuild = testBot.getGuildById(config.testGuild());
-        Assert.assertNotNull(jGuild);
+        assertNotNull(jGuild);
         dGuild = cache.getGuild(config.testGuild());
-        Assert.assertNotNull(dGuild);
+        assertNotNull(dGuild);
     }
 
     @Test
@@ -118,17 +120,17 @@ public class CacheTests {
     @Test
     void matchingVoiceStates() {
         jGuild.getVoiceStates().forEach((s) -> {
-            if(!s.inVoiceChannel()) return;
+            if (!s.inVoiceChannel()) return;
             Any dState = dGuild.voiceStates.get(s.getMember().getUser().getIdLong());
-            Assert.assertNotNull(dState);
-            Assert.assertEquals(s.getChannel().getIdLong(), dState.get("channel_id").mustBeValid().toLong());
-            Assert.assertEquals(s.getMember().getUser().getIdLong(), dState.get("user_id").mustBeValid().toLong());
-            Assert.assertEquals(s.getSessionId(), dState.get("session_id").mustBeValid().toString());
-            Assert.assertEquals(s.isDeafened(), dState.get("deaf").mustBeValid().toBoolean());
-            Assert.assertEquals(s.isMuted(), dState.get("mute").mustBeValid().toBoolean());
-            Assert.assertEquals(s.isSelfDeafened(), dState.get("self_deaf").mustBeValid().toBoolean());
-            Assert.assertEquals(s.isSelfMuted(), dState.get("self_mute").mustBeValid().toBoolean());
-            Assert.assertEquals(s.isSuppressed(), dState.get("suppress").mustBeValid().toBoolean());
+            assertNotNull(dState);
+            assertEquals(s.getChannel().getIdLong(), dState.get("channel_id").mustBeValid().toLong());
+            assertEquals(s.getMember().getUser().getIdLong(), dState.get("user_id").mustBeValid().toLong());
+            assertEquals(s.getSessionId(), dState.get("session_id").mustBeValid().toString());
+            assertEquals(s.isDeafened(), dState.get("deaf").mustBeValid().toBoolean());
+            assertEquals(s.isMuted(), dState.get("mute").mustBeValid().toBoolean());
+            assertEquals(s.isSelfDeafened(), dState.get("self_deaf").mustBeValid().toBoolean());
+            assertEquals(s.isSelfMuted(), dState.get("self_mute").mustBeValid().toBoolean());
+            assertEquals(s.isSuppressed(), dState.get("suppress").mustBeValid().toBoolean());
         });
     }
 
@@ -142,7 +144,7 @@ public class CacheTests {
     private void assetListsEquals(List<? extends Comparable> a, List<? extends Comparable> b) {
         a.sort(Comparable::compareTo);
         b.sort(Comparable::compareTo);
-        Assert.assertEquals(a, b);
+        assertEquals(a, b);
     }
 
 }
