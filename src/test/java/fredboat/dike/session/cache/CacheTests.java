@@ -8,10 +8,9 @@ import fredboat.dike.util.DikeSessionController;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.Guild;
 import org.junit.Assert;
-import org.junit.FixMethodOrder;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {TestConfigImpl.class, TestBeans.class, CacheTestEventListener.class,
         DikeSessionController.class})
@@ -44,8 +42,15 @@ public class CacheTests {
     private static Cache cache;
     private static Session session = null;
 
-    @Test
-    void sessionExists() {
+    // Uses before each to avoid being static
+    @BeforeEach
+    void beforeEach() {
+        jGuild = testBot.getGuildById(config.testGuild());
+        Assert.assertNotNull(jGuild);
+        dGuild = cache.getGuild(config.testGuild());
+        Assert.assertNotNull(dGuild);
+
+        // Validate sessions
         Collection<Session> sessions = SessionManager.INSTANCE.getSessions();
         Assert.assertEquals(sessions.size(), 1);
 
@@ -55,14 +60,6 @@ public class CacheTests {
         Assert.assertNotNull(session);
         cache = session.getCache();
         Assert.assertNotNull(cache);
-    }
-
-    @Test
-    void guildExists() {
-        jGuild = testBot.getGuildById(config.testGuild());
-        Assert.assertNotNull(jGuild);
-        dGuild = cache.getGuild(config.testGuild());
-        Assert.assertNotNull(dGuild);
     }
 
     @Test
