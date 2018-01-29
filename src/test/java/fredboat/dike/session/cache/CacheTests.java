@@ -1,5 +1,6 @@
 package fredboat.dike.session.cache;
 
+import com.jsoniter.any.Any;
 import fredboat.dike.TestBeans;
 import fredboat.dike.TestConfigImpl;
 import fredboat.dike.session.Session;
@@ -115,12 +116,20 @@ public class CacheTests {
     }
 
     @Test
-    void aSameVoiceStates() {
-        List<Long> jStates = new ArrayList<>();
-        List<Long> dStates = new ArrayList<>();
-        jGuild.getVoiceStates().forEach((s) -> jStates.add(s.getMember().getUser().getIdLong()));
-        dGuild.voiceStates.forEach((key, value) -> dStates.add(key));
-        assetListsEquals(jStates, dStates);
+    void matchingVoiceStates() {
+        jGuild.getVoiceStates().forEach((s) -> {
+            if(!s.inVoiceChannel()) return;
+            Any dState = dGuild.voiceStates.get(s.getMember().getUser().getIdLong());
+            Assert.assertNotNull(dState);
+            Assert.assertEquals(s.getChannel().getIdLong(), dState.get("channel_id").mustBeValid().toLong());
+            Assert.assertEquals(s.getMember().getUser().getIdLong(), dState.get("user_id").mustBeValid().toLong());
+            Assert.assertEquals(s.getSessionId(), dState.get("session_id").mustBeValid().toString());
+            Assert.assertEquals(s.isDeafened(), dState.get("deaf").mustBeValid().toBoolean());
+            Assert.assertEquals(s.isMuted(), dState.get("mute").mustBeValid().toBoolean());
+            Assert.assertEquals(s.isSelfDeafened(), dState.get("self_deaf").mustBeValid().toBoolean());
+            Assert.assertEquals(s.isSelfMuted(), dState.get("self_mute").mustBeValid().toBoolean());
+            Assert.assertEquals(s.isSuppressed(), dState.get("suppress").mustBeValid().toBoolean());
+        });
     }
 
     @AfterAll
